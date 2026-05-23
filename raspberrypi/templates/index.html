@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>GNSS Smart Dashboard</title>
+<meta charset="utf-8" />
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<style>
+body {
+    font-family: Arial;
+    background: #0f172a;
+    color: white;
+    text-align: center;
+}
+
+h2 { margin-top: 10px; }
+
+.container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 10px;
+}
+
+.card {
+    background: #1e293b;
+    padding: 15px;
+    border-radius: 10px;
+    width: 200px;
+}
+
+.active {
+    border: 2px solid #22c55e;
+}
+
+#map {
+    height: 400px;
+    width: 90%;
+    margin: auto;
+    border-radius: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>🚀 GNSS Dynamic Selection System</h2>
+
+<div class="container">
+    <div id="gpsCard" class="card">
+        <h3>GPS</h3>
+        <p>Sat: <span id="gps_sat">-</span></p>
+        <p>Weight: <span id="gps_w">-</span></p>
+    </div>
+
+    <div id="gnssCard" class="card">
+        <h3>GNSS</h3>
+        <p>Sat: <span id="gnss_sat">-</span></p>
+        <p>Weight: <span id="gnss_w">-</span></p>
+    </div>
+</div>
+
+<div class="card">
+    <b>Selected:</b> <span id="src">-</span><br>
+    <b>Lat:</b> <span id="lat">-</span><br>
+    <b>Lon:</b> <span id="lon">-</span>
+</div>
+
+<div id="map"></div>
+
+<script>
+
+var map = L.map('map').setView([10.05, 76.33], 15);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+var marker = L.marker([10.05, 76.33]).addTo(map);
+
+function update() {
+    fetch('/location')
+    .then(res => res.json())
+    .then(data => {
+
+        document.getElementById("src").innerText = data.source;
+        document.getElementById("lat").innerText = data.lat;
+        document.getElementById("lon").innerText = data.lon;
+
+        marker.setLatLng([data.lat, data.lon]);
+
+        document.getElementById("gpsCard").classList.remove("active");
+        document.getElementById("gnssCard").classList.remove("active");
+
+        if (data.source === "GPS") {
+            document.getElementById("gpsCard").classList.add("active");
+        } else {
+            document.getElementById("gnssCard").classList.add("active");
+        }
+    });
+}
+
+setInterval(update, 1000);
+
+</script>
+
+</body>
+</html>
