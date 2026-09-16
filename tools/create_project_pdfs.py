@@ -4,10 +4,13 @@ The generated documents describe the ADAPTIVE-WEIGHT receiver-selection system:
 
     W_i = a*T_i + b*S_i + c*SNR_i + d*DOP_i      Best Source = argmax(W)
 
-The ML component is a dynamic weight learner: a compact MLP maps conditioning
-features X to softmax coefficients [a,b,c,d] = f(X). Model A (original fixed
-weights), Model B (grid-search optimized fixed weights) and Model C (learned
-dynamic weights, with and without hysteresis) are compared on held-out sessions.
+The heart of the system is an ML dynamic weight learner: a compact MLP maps
+conditioning features X to softmax coefficients [a,b,c,d] = f(X), which the
+reliability equation then uses to score each receiver. The predefined fixed
+coefficients (0.25, 0.25, 0.30, 0.20) are only a bring-up/emergency fallback
+and a comparison baseline. Model A (predefined fixed), Model B (grid-search
+optimized fixed) and Model C (learned dynamic weights, with and without
+hysteresis) are compared on held-out sessions.
 
 The documents deliberately distinguish the implemented prototype (Phase 6,
 live-integrated engine) from the offline simulation study. They are intended
@@ -81,7 +84,7 @@ COVER_DATE = "September 2026"
 
 # Model C results with and without the live-default hysteresis threshold.
 MODEL_KEYS = [
-    ("Model A - original fixed",      "A",   "original_fixed_weights_model_A"),
+    ("Model A - predefined fixed",    "A",   "original_fixed_weights_model_A"),
     ("Model B - optimized fixed",     "B",   "optimized_fixed_weights_model_B"),
     ("Model C - dynamic ML",          "C",   "dynamic_ml_weights_model_C"),
     ("Model C + hysteresis (0.05)",   "C+h", "dynamic_ml_with_hysteresis"),
@@ -396,7 +399,7 @@ def model_drawing():
     box(d, 80, 45, 160, 62, "Reliability equation\nW = a*T + b*S + c*SNR + d*DOP\nper receiver; argmax(W) selects", fill=HexColor("#FDF3DE"), stroke=GOLD, font_size=7.2)
     arrow(d, 330, 130, 355, 107)
     arrow(d, 300, 76, 240, 76)
-    d.add(String(8, 212, "Trainable parameters: 1,108 (408 + 600 + 100). Stored normalization values: 32 (mean and std for 16 inputs). Output coefficients are weights for the preserved equation, not a black-box position estimate.",
+    d.add(String(8, 212, "Trainable parameters: 1,108 (408 + 600 + 100). Stored normalization values: 32 (mean and std for 16 inputs). Output coefficients are the adaptive weights used by the reliability equation, not a black-box position estimate.",
                  fontName="Helvetica", fontSize=7.4, fillColor=MUTED))
     return d
 
@@ -588,11 +591,11 @@ def front_matter(doc):
 
     story += [h1("Abstract")]
     story += [p("Low-cost GNSS receivers can disagree because satellite visibility, geometry, signal quality, "
-                "multipath and stale observations vary over time. Selecting one receiver with a fixed hand-"
-                "designed score can hide these interactions. This project keeps the original reliability equation "
-                "W = a*T + b*S + c*SNR + d*DOP unchanged and instead learns the coefficients context-dependently: "
-                "a compact neural network maps current GNSS conditions to [a, b, c, d], so the same "
-                "self-explanatory formula is used everywhere while its weights adapt."),
+                "multipath and stale observations vary over time. The project is built around a machine-learned "
+                "weighting of the reliability indicators: the decision rule W = a*T + b*S + c*SNR + d*DOP scores "
+                "each receiver with four normalized indicators, and a compact neural network learns the "
+                "coefficients [a, b, c, d] from the current GNSS conditions, so the same self-explanatory formula "
+                "is used everywhere while its weights adapt."),
               p("The hardware pipeline uses two GNSS data streams acquired by an ESP32 with a per-second C/N0 "
                 "tracker, a Raspberry Pi decision engine that applies the learned weights with a switching "
                 "deadband (hysteresis) and a fixed-weight fallback, and a Flask web view. The offline experiment "
@@ -602,7 +605,7 @@ def front_matter(doc):
                 f"selected error of {TEST['dynamic_ml_weights_model_C']['mean_error_m']:.3f} m, improving to "
                 f"{TEST['dynamic_ml_with_hysteresis']['mean_error_m']:.3f} m with a 0.05 deadband and about 43 "
                 f"percent fewer source switches, compared with "
-                f"{TEST['original_fixed_weights_model_A']['mean_error_m']:.3f} m for the original fixed "
+                f"{TEST['original_fixed_weights_model_A']['mean_error_m']:.3f} m for the predefined fixed "
                 f"coefficients. These figures are results of the controlled simulation, not field or RTK accuracy "
                 f"claims."),
               PageBreak()]
@@ -631,14 +634,13 @@ def report_story(doc):
 
     story += [h1("1. Introduction"),
               p("Global Navigation Satellite Systems estimate a receiver position from radio signals transmitted by satellites. A low-cost GNSS module normally reports latitude, longitude, time, satellite count and quality indicators. In open sky, two receivers may appear similar. In partly blocked or reflective surroundings, their reported positions can differ even when both still have a valid fix. A selection system is useful when it continuously decides which receiver output is more likely to be accurate at the current instant."),
-              p("The project keeps the original reliability equation as its decision rule: each receiver gets a score W = a*T + b*S + c*SNR + d*DOP built from timing accuracy, satellite count, signal-to-noise ratio and HDOP, and the receiver with the larger W is selected. The scientific question studied in this phase is where the coefficients [a, b, c, d] should come from. A fixed, hand-chosen set is not learned from measurements and cannot respond when the GNSS environment changes. The revised experiment learns a compact mapping f(X) from current conditions to the coefficients, so the same transparent formula is preserved while its weights adapt."),
+              p("The project's decision rule is a weighted reliability score: each receiver gets a score W = a*T + b*S + c*SNR + d*DOP built from timing accuracy, satellite count, signal-to-noise ratio and HDOP, and the receiver with the larger W is selected. The coefficients [a, b, c, d] are not hand-tuned; they are learned by a compact neural network f(X) that maps the current GNSS conditions to the weights. A predefined fixed set (0.25, 0.25, 0.30, 0.20) was used only during early bring-up so the acquisition and decision pipeline could be verified before the ML component was wired in; in the deployed system it survives solely as an emergency fallback and as a comparison baseline."),
               h2("1.1 Objectives"),
               bullets([
                   "Acquire and format readings, including a 1 s average C/N0, from two GNSS receivers through an ESP32 UART bridge.",
-                  "Provide a Raspberry Pi decision engine and Flask path that applies learned adaptive weights, with hysteresis and a fixed-weight fallback, and exposes a selected location.",
-                  "Preserve the original reliability equation and let a learned network replace only the fixed coefficients, never the decision rule itself.",
-                  "Reject unavailable, stale or physically invalid inputs explicitly so missing values cannot win a comparison.",
-                  "Evaluate the learned weights against the original fixed coefficients and a globally optimized fixed set on held-out sessions, reporting mean, median, tail error, flip accuracy and switching behaviour."]),
+                  "Provide a Raspberry Pi decision engine and Flask path that applies the learned adaptive weights, with hysteresis and a fixed-weight fallback, and exposes a selected location.",
+                  "Learn the coefficients of the reliability equation with a compact neural network so the decision rule stays transparent while its weights become context-dependent.",
+                  "Evaluate the learned weights against the predefined fixed set and a globally optimized fixed set on held-out sessions, reporting mean, median, tail error, flip accuracy and switching behaviour."]),
               h2("1.2 Scope"),
               p("The repository contains a hardware-oriented prototype whose live path is implemented and a separate offline model experiment that produced the exported weights. The ESP32 firmware, Raspberry Pi engine, web dashboard and the ML training/evaluation code are all in the repository. The evaluation reported here is a controlled simulation study; the model and engine are integrated together, but they have not yet been validated against synchronized real receiver logs and a trusted reference trajectory."), PageBreak(),
 
@@ -683,30 +685,30 @@ def report_story(doc):
               caption("Table 2. Components and evidence-based implementation status."), PageBreak(),
 
               h1("4. The Weighted Reliability Score and Its Limitations"),
-              p("The decision rule is the original weighted reliability equation. Each receiver is scored with four components normalized to 0 to 1:"),
+              p("The decision rule of the project is the weighted reliability equation. Each receiver is scored with four components normalized to 0 to 1:"),
 
               p("<font name='Courier'>T   = clip(1 - time_error / 5, 0, 1)\nS   = clip(satellites / 20, 0, 1)\nSNR = clip(cn0 / 50, 0, 1)\nDOP = clip(1 / HDOP, 0, 1)\nW = a*T + b*S + c*SNR + d*DOP\nbest_receiver = argmax(W)</font>", "body"),
 
               h2("4.1 Why a numerical score is not a reliability percentage"),
               p("A value such as 0.8 is only the result of a formula unless it has been calibrated against repeated observed outcomes. It does not mean an 80 percent probability of being correct or an 80 percent chance of being within a distance. The project therefore reports the selection in measurable terms: mean, median and tail position error of the chosen receiver against the generated reference trajectory. The weights themselves are compared as numbers learned from data, not as probabilities."),
-              h2("4.2 Specific limitations of the original fixed set"),
+              h2("4.2 Specific limitations of the predefined fixed set"),
               data_table([
-                  ["Issue", "Effect", "Revision in this phase"],
-                  ["Fixed 25/25/30/20 weights", "No experimental basis for the relative importance of features; weights cannot adapt when the environment changes.", "Model A keeps these as a baseline and as the engine's fallback; Model B and Model C learn better weights from data."],
+                  ["Issue", "Effect", "Role in this project"],
+                  ["Predefined 25/25/30/20 weights", "No experimental basis for the relative importance of features; weights cannot adapt when the environment changes.", "Model A keeps these as the fallback and comparison baseline; the learned model supplies the weights used in practice."],
                   ["Satellite count capped at 20", "Counts above 20 receive the same satellite term.", "The cap is retained in the normalized term; additional satellites still appear in the 16-dimension conditioning input."],
                   ["HDOP capped at 1", "All HDOP values at or below 1 receive the same geometry term.", "The cap remains in the term; raw HDOP enters the conditioning vector."],
                   ["Satellite count and HDOP overlap", "A hand formula can double-count closely related quality evidence.", "The learned network can weight the terms jointly and nonlinearly, although correlation remains a data issue."],
                   ["Invalid inputs inconsistently handled", "Negative or stale values can create meaningless scores.", "Eligibility rules reject invalid or stale receivers before scoring."],
                   ["Weights cannot react to context", "The relative value of timing versus geometry is assumed constant.", "The adaptive network changes [a,b,c,d] with current conditions while keeping the equation interpretable."],
               ], [3.2*cm, 6.0*cm, 5.8*cm]),
-              caption("Table 3. Motivation for learning context-dependent weights instead of replacing the equation."), PageBreak(),
+              caption("Table 3. Motivation for learning context-dependent weights rather than relying on a predefined set."), PageBreak(),
 
               h1("5. Adaptive Weight Learning"),
-              p("Model C is an adaptive weight learner. It does not replace the selection rule with a black-box classifier; instead a compact MLP maps a conditioning feature vector X to softmax coefficients [a,b,c,d] = f(X), which are then inserted into the preserved reliability equation. Constraining the output with softmax keeps a,b,c,d non-negative and summing to one, so the weights stay interpretable as a normalized allocation of importance."),
+              p("The heart of the system is an adaptive weight learner. A compact MLP maps a conditioning feature vector X to softmax coefficients [a,b,c,d] = f(X), which the reliability equation then uses to score each receiver. Constraining the output with softmax keeps a,b,c,d non-negative and summing to one, so the weights stay interpretable as a normalized allocation of importance. The learned model is the primary source of the coefficients; the predefined set is used only when the network is unavailable."),
               model_drawing(),
-              figcaption("Fig 5.1 Model C architecture: learned coefficients feed the unchanged W = a*T + b*S + c*SNR + d*DOP rule."),
+              figcaption("Fig 5.1 Learned-weight architecture: conditioning features produce the coefficients used by the W = a*T + b*S + c*SNR + d*DOP rule."),
               h2("5.1 Conditioning features"),
-              p("The network conditions on 16 features built from both receivers at each epoch: the eight raw reliability-relevant values (T-related timing error, satellites, C/N0 and HDOP for receiver 0 and receiver 1), four comparative deltas between the two receivers, and four temporal statistics (per-receiver satellite-count rate and a causal 5-sample C/N0 moving average). All features are observable at decision time. The model respects the original raw channel order: satellites, HDOP, C/N0, age, step, time error and receiver id."),
+              p("The network conditions on 16 features built from both receivers at each epoch: the eight raw reliability-relevant values (T-related timing error, satellites, C/N0 and HDOP for receiver 0 and receiver 1), four comparative deltas between the two receivers, and four temporal statistics (per-receiver satellite-count rate and a causal 5-sample C/N0 moving average). All features are observable at decision time. The model respects the project's raw channel order: satellites, HDOP, C/N0, age, step, time error and receiver id."),
               h2("5.2 Network and parameter count"),
               data_table([
                   ["Layer", "Shape", "Activation", "Parameters"],
@@ -719,9 +721,9 @@ def report_story(doc):
               ], [2.9*cm, 3.4*cm, 3.2*cm, 5.5*cm]),
               caption("Table 4. Model C architecture and parameter accounting."),
               h2("5.3 Why learn weights instead of predicting error directly"),
-              p("Predicting each receiver's error and choosing the smaller one is a valid alternative, but it changes the system's behaviour into a per-receiver regression on synthetic labels and requires trusting each network's error scale. Learning weights keeps the decision rule identical to the original project and makes the change inspectable: the examiner can see that the formula is unchanged and only its coefficients now adapt to conditions."),
+              p("Predicting each receiver's error and choosing the smaller one is a valid alternative, but it changes the system's behaviour into a per-receiver regression on synthetic labels and requires trusting each network's error scale. Learning weights keeps the decision rule transparent and localized: the examiner can see that the formula is fixed and the network's whole role is to set its four coefficients."),
               h2("5.4 Deployment behaviour"),
-              p("At inference the engine computes W for both receivers, restricts selection to receivers that pass the availability checks (valid fix, at least four satellites, HDOP inside range, data younger than 2 s), and applies a deadband: if the absolute difference |W0 - W1| is below the hysteresis threshold, the previously selected receiver is retained to avoid rapid oscillation. If the learned model fails to load or returns abnormal output, the engine falls back to the original fixed coefficients (0.25, 0.25, 0.30, 0.20)."), PageBreak(),
+              p("At inference the engine computes W for both receivers, restricts selection to receivers that pass the availability checks (valid fix, at least four satellites, HDOP inside range, data younger than 2 s), and applies a deadband: if the absolute difference |W0 - W1| is below the hysteresis threshold, the previously selected receiver is retained to avoid rapid oscillation. If the learned model fails to load or returns abnormal output, the engine falls back to the predefined fixed coefficients (0.25, 0.25, 0.30, 0.20)."), PageBreak(),
 
               h1("6. Training and Evaluation Design"),
               h2("6.1 Training objective"),
@@ -738,7 +740,7 @@ def report_story(doc):
               ], [3.0*cm, 2.3*cm, 5.6*cm, 4.1*cm]),
               caption("Table 5. Session-level partitioning used by the experiment."),
               h2("6.4 Optimisation and baselines"),
-              p("Model C is trained with Adam (learning rate 0.001, batch 512, early stopping after 12 epochs without improvement, maximum 60 epochs). The best validation checkpoint was found at epoch 6. Two fixed-weight baselines accompany it: Model A restores the original coefficients (0.25, 0.25, 0.30, 0.20); Model B is a fixed set found by an exhaustive grid search over the simplex at step 0.05 (1,771 candidates) on validation epochs, which selected alpha 0.10, beta 0.20, gamma 0.00 and delta 0.70."),
+              p("Model C is trained with Adam (learning rate 0.001, batch 512, early stopping after 12 epochs without improvement, maximum 60 epochs). The best validation checkpoint was found at epoch 6. Two fixed-weight baselines accompany it: Model A reproduces the predefined fallback coefficients (0.25, 0.25, 0.30, 0.20); Model B is a fixed set found by an exhaustive grid search over the simplex at step 0.05 (1,771 candidates) on validation epochs, which selected alpha 0.10, beta 0.20, gamma 0.00 and delta 0.70."),
               h2("6.5 Metrics"),
               bullets([
                   "<b>Mean, median, RMSE and 95th-percentile selected error:</b> distribution of the horizontal error of the receiver selected at each available epoch.",
@@ -748,7 +750,7 @@ def report_story(doc):
               ]), PageBreak(),
 
               h1("7. Results"),
-              p("The following results compare the fixed-weight baselines and the adaptive model on the 20 held-out test sessions. All selection decisions use the reliability equation; only the coefficients differ."),
+              p("The following results compare the predefined fixed set, the optimized fixed set and the learned adaptive model on the 20 held-out test sessions. All selection decisions use the same reliability equation; only the coefficients differ."),
               accuracy_chart(),
               figcaption("Fig 7.1 Held-out comparison. Lower error is better."),
               data_table([
@@ -785,7 +787,7 @@ def report_story(doc):
                 f"prefers receiver 1, while a fixed baseline struggles with the same set. The off-diagonal imbalance "
                 f"also shows why the reliability equation needs a hysteresis deadband: many of the residual disagreements "
                 f"occur when the two scores are close, which is exactly the regime hysteresis suppresses."),
-              p(f"Model C reduced mean selected error by {(1 - C['mean_error_m'] / A['mean_error_m'])*100:.1f} percent relative to the original Model A and by {(1 - C['mean_error_m'] / B['mean_error_m'])*100:.1f} percent relative to the optimized fixed Model B. With the 0.05 hysteresis deadband, mean error fell to {Cx['mean_error_m']:.3f} m, 95th-percentile error to {Cx['p95_error_m']:.3f} m, flip accuracy rose from {A['selection_accuracy_vs_oracle']*100:.1f} percent (A) to {Cx['selection_accuracy_vs_oracle']*100:.1f} percent, and source switches dropped by {(1 - Cx['switches']/A['switches'])*100:.1f} percent compared with Model A."),
+              p(f"Model C reduced mean selected error by {(1 - C['mean_error_m'] / A['mean_error_m'])*100:.1f} percent relative to the predefined fixed Model A and by {(1 - C['mean_error_m'] / B['mean_error_m'])*100:.1f} percent relative to the optimized fixed Model B. With the 0.05 hysteresis deadband, mean error fell to {Cx['mean_error_m']:.3f} m, 95th-percentile error to {Cx['p95_error_m']:.3f} m, flip accuracy rose from {A['selection_accuracy_vs_oracle']*100:.1f} percent (A) to {Cx['selection_accuracy_vs_oracle']*100:.1f} percent, and source switches dropped by {(1 - Cx['switches']/A['switches'])*100:.1f} percent compared with Model A."),
               p("The honest reading is that the accuracy gain of dynamic weighting over even the optimized fixed set is small. Most of the practical improvement comes from the hysteresis deadband, which stabilizes the output track rather than dramatically changing accuracy. These figures only support the claim that the adaptive weights learned the patterns built into this controlled study."), PageBreak(),
 
               h1("8. Results by Scenario and Learned-Weight Analysis"),
@@ -849,7 +851,7 @@ def report_story(doc):
               ]), PageBreak(),
 
               h1("10. Conclusion"),
-              p("This project keeps the decision rule simple and inspectable - W = a*T + b*S + c*SNR + d*DOP with argmax selection - and makes the weights adaptive. The offline experiment shows that a compact network can learn interpretable, context-dependent weights: DOP dominates under good conditions, while timing and satellite terms take over under degraded ones. The gains over even an optimized fixed set are modest, and most of the practical stability comes from the hysteresis deadband."),
+              p("This project is a dynamic receiver-selection system built around a transparent decision rule - W = a*T + b*S + c*SNR + d*DOP with argmax selection - whose weights are learned adaptively by a compact neural network. The offline experiment shows that the network learns interpretable, context-dependent weights: DOP dominates under good conditions, while timing and satellite terms take over under degraded ones. The gains over even an optimized fixed set are modest, and most of the practical stability comes from the hysteresis deadband."),
               p("The live pipeline integrates all pieces: the ESP32 emits C/N0, the Raspberry Pi engine applies learned weights with fallback and hysteresis and logs every decision, and the dashboard visualizes results. The next milestone is not more modelling: it is collecting synchronized real receiver and reference data so that the same pipeline can be retrained and honestly evaluated outside the controlled simulation."),
               h1("References"),
               numbered([
@@ -892,9 +894,9 @@ def viva_story(doc):
     story += [h1("How to Use This Guide"),
               p("Read Sections 1 to 6 first if you are new to GNSS. They build the mental model needed to answer a teacher without memorising jargon. Sections 7 to 10 connect those concepts to the exact repository and its current limitations. Section 11 contains short answers to likely questions. Do not claim a result that this guide labels as a simulation result."),
               h2("Thirty second project explanation"),
-              p("Our project compares two GNSS receiver readings at each update and selects the one with the larger reliability score W = a*T + b*S + c*SNR + d*DOP, where T is timing accuracy, S is satellite count, SNR is signal quality and DOP is inverted HDOP. The original approach used fixed coefficients. We added a small neural network that learns the coefficients [a, b, c, d] from current conditions, so the same transparent formula is always used but its weights adapt. We compare the learned model against the original fixed coefficients and an optimized fixed set on held-out simulated sessions, and we integrated the result into a Raspberry Pi decision engine with hysteresis and a fixed-weight fallback."),
+              p("Our project compares two GNSS receiver readings at each update and selects the one with the larger reliability score W = a*T + b*S + c*SNR + d*DOP, where T is timing accuracy, S is satellite count, SNR is signal quality and DOP is inverted HDOP. The coefficients come from a small neural network that learns [a, b, c, d] from the current conditions, so the same transparent formula is always used while its weights adapt. A predefined fixed set is kept only as a bring-up fallback and a comparison baseline. We compare the learned model against the predefined fixed set and an optimized fixed set on held-out simulated sessions, and we integrated the adaptive weights into a Raspberry Pi decision engine with hysteresis and a fixed-weight fallback."),
               h2("One sentence answer for the main contribution"),
-              p("We kept the original reliability equation unchanged and made its coefficients context-dependent through a small learned network, then integrated the adaptive weights into the live receiver-selection engine with hysteresis and a safe fallback."),
+              p("We built a receiver-selection system whose reliability-equation coefficients are learned context-dependently by a compact network, and integrated the adaptive weights into the live engine with hysteresis and a safe predefined-weight fallback."),
               PageBreak(),
 
               h1("1. GNSS From First Principles"),
@@ -928,31 +930,31 @@ def viva_story(doc):
               h2("2.5 HDOP and satellite count are related but not identical"),
               p("They often move together because fewer visible satellites can worsen geometry. They are still different: two groups of satellites can have the same count but very different sky distribution and HDOP. A model can receive both, but it needs properly separated data and careful validation so it does not learn a fragile accidental correlation."), PageBreak(),
 
-              h1("3. The Original Weighted Score and Its Limitations"),
-              Preformatted("T   = clip(1 - time_error/5, 0, 1)\nS   = clip(satellites/20,    0, 1)\nSNR = clip(cn0/50,           0, 1)\nDOP = clip(1/HDOP,           0, 1)\n\nW = 0.25*T + 0.25*S + 0.30*SNR + 0.20*DOP\nselect the receiver with the larger W", S["code"]),
-              h2("3.1 Why it looks reasonable"),
-              p("The formula uses understandable signals and produces one number per receiver. It is cheap to calculate and easy to explain. For a first prototype it establishes a baseline that can be compared with a learned decision method."),
-              h2("3.2 Why it is not sufficient"),
+              h1("3. The Weighted Score and the Predefined Fallback"),
+              Preformatted("T   = clip(1 - time_error/5, 0, 1)\nS   = clip(satellites/20,    0, 1)\nSNR = clip(cn0/50,           0, 1)\nDOP = clip(1/HDOP,           0, 1)\n\nW = 0.25*T + 0.25*S + 0.30*SNR + 0.20*DOP   (fallback set)\nselect the receiver with the larger W", S["code"]),
+              h2("3.1 Why the predefined set is useful as a fallback"),
+              p("The formula uses understandable signals and produces one number per receiver. It is cheap to calculate and easy to explain. A predefined coefficient set is useful during bring-up to verify that acquisition and decision logic work before the learned weights are enabled, and as a safe fallback when the model is unavailable."),
+              h2("3.2 Why the predefined set is not the decision method"),
               bullets([
-                  "The numbers 0.25, 0.25, 0.30 and 0.20 are choices, not values learned from labelled position-error observations.",
-                  "The weights never change, so the formula cannot react when the GNSS environment changes.",
-                  "The terms clip high satellite counts and good HDOP values, losing distinctions in those ranges.",
-                  "It can double-count quality evidence when inputs are correlated.",
-                  "A score has no direct physical unit. Without calibration, 0.8 does not mean 80 percent reliable.",
-                  "Invalid inputs must be explicitly rejected; otherwise a missing value may accidentally look favourable.",
+                   "The numbers 0.25, 0.25, 0.30 and 0.20 are convenient starting values, not values learned from labelled position-error observations.",
+                   "The weights never change, so the formula cannot react when the GNSS environment changes.",
+                   "The terms clip high satellite counts and good HDOP values, losing distinctions in those ranges.",
+                   "It can double-count quality evidence when inputs are correlated.",
+                   "A score has no direct physical unit. Without calibration, 0.8 does not mean 80 percent reliable.",
+                   "Invalid inputs must be explicitly rejected; otherwise a missing value may accidentally look favourable.",
               ]),
-              h2("3.3 Difference between a heuristic and a learned weight set"),
+              h2("3.3 Difference between predefined and learned weights"),
               data_table([
-                  ["Question", "Fixed heuristic", "Learned weights"],
-                  ["Where do weights come from", "Human choice.", "Optimisation on labelled training examples (or grid search for Model B)."],
-                  ["Can weights change with context", "No.", "Yes: [a,b,c,d] = f(X) changes with conditions."],
-                  ["What is preserved", "The formula.", "The same formula; only the coefficients change."],
-                  ["What can go wrong", "Bad formula or thresholds.", "Bad or unrepresentative data, leakage, overfitting, or unsafe outputs without a fallback."],
+                   ["Question", "Predefined fallback", "Learned weights"],
+                   ["Where do weights come from", "Human choice.", "Optimisation on labelled training examples (or grid search for Model B)."],
+                   ["Can weights change with context", "No.", "Yes: [a,b,c,d] = f(X) changes with conditions."],
+                   ["What is fixed", "The formula and the coefficients.", "The formula; the coefficients change."],
+                   ["What can go wrong", "Poor fixed formula or thresholds.", "Bad or unrepresentative data, leakage, overfitting, or unsafe outputs without a fallback."],
               ], [4.0*cm, 5.6*cm, 5.4*cm]), PageBreak(),
 
               h1("4. The Adaptive Weight Model"),
               model_drawing(),
-              figcaption("Fig 4.1 Model C: conditioning features produce softmax coefficients for the preserved reliability equation."),
+              figcaption("Fig 4.1 Learned weights: conditioning features produce softmax coefficients for the reliability equation."),
               h2("4.1 Exact architecture and parameter count"),
               Preformatted("Input X: 16 conditioning features\nNormalize: z = (x - training_mean) / training_std\nHidden 1: ReLU(z @ W1 + b1)      16 -> 24\nHidden 2: ReLU(h1 @ W2 + b2)     24 -> 24\nOutput:   softmax(h2 @ W3 + b3)  24 -> 4  [a, b, c, d]\n\nW1: 16 x 24 = 384      b1: 24\nW2: 24 x 24 = 576      b2: 24\nW3: 24 x 4 = 96        b3: 4\nTotal trainable parameters = 1,108", S["code"]),
               h2("4.2 What does ReLU do"),
@@ -1004,7 +1006,7 @@ def viva_story(doc):
               h2("6.2 Hysteresis and why it matters"),
               p("Suppose receiver A scores 0.70 and receiver B scores 0.69 at one second, then their order reverses the next second. Immediate switching can oscillate, changing the selected source several times per minute. Hysteresis keeps the previous selection unless the difference crosses a threshold. In this study threshold 0.05 was the best balance, cutting switches by about 42 percent with unchanged or slightly better accuracy. The correct threshold must be confirmed on real data."),
               h2("6.3 Fallback behaviour"),
-              p("If the model fails to load or returns abnormal weights, the engine falls back to the original fixed coefficients 0.25, 0.25, 0.30, 0.20 (Model A). The fallback keeps the live service functional and is also used for the 7-field frames that lack a C/N0 value."), PageBreak(),
+              p("If the model fails to load or returns abnormal weights, the engine falls back to the predefined fixed coefficients 0.25, 0.25, 0.30, 0.20 (Model A). The fallback keeps the live service functional and is also used for the 7-field frames that lack a C/N0 value."), PageBreak(),
 
               h1("7. Results You Can Explain Precisely"),
               accuracy_chart(),
@@ -1017,7 +1019,7 @@ def viva_story(doc):
                     for name, _, key in MODEL_KEYS],
               ], [4.6*cm, 2.3*cm, 2.0*cm, 2.2*cm, 2.2*cm, 2.0*cm]),
               h2("7.1 A correct interpretation"),
-              p(f"On the held-out sessions, Model C achieved {test['dynamic_ml_weights_model_C']['mean_error_m']:.3f} m mean selected error versus {test['original_fixed_weights_model_A']['mean_error_m']:.3f} m for the original fixed weights and {test['optimized_fixed_weights_model_B']['mean_error_m']:.3f} m for the optimized fixed set. With the 0.05 deadband the mean falls to {test['dynamic_ml_with_hysteresis']['mean_error_m']:.3f} m. The gains are real but modest; the bigger practical win is the switching reduction. It does not prove that the model will achieve these values on a road, farm or city street."),
+              p(f"On the held-out sessions, Model C achieved {test['dynamic_ml_weights_model_C']['mean_error_m']:.3f} m mean selected error versus {test['original_fixed_weights_model_A']['mean_error_m']:.3f} m for the predefined fixed fallback and {test['optimized_fixed_weights_model_B']['mean_error_m']:.3f} m for the optimized fixed set. With the 0.05 deadband the mean falls to {test['dynamic_ml_with_hysteresis']['mean_error_m']:.3f} m. The gains are real but modest; the bigger practical win is the switching reduction. It does not prove that the model will achieve these values on a road, farm or city street."),
               h2("7.2 Learned weights are interpretable"),
               p(f"Overall the model allocates about {LW['overall']['weights']['delta']*100:.0f} percent to DOP, but in open-sky epochs the DOP weight reaches {LW['by_scenario']['open_sky']['weights']['delta']:.2f} while in urban multipath the timing and satellite weights dominate (alpha + beta ~0.96). This is the key evidence that the network learned context-dependent weighting rather than a single fixed allocation."),
               h2("7.3 The flip-oracle is not a competitor"),
@@ -1050,7 +1052,7 @@ def viva_story(doc):
               h2("9.1 Statements you can safely make"),
               bullets([
                   "The architecture supports two receiver inputs, embedded acquisition with C/N0, and a live decision engine.",
-                  "The reliability equation W = a*T + b*S + c*SNR + d*DOP is preserved unchanged; only the coefficients are learned.",
+                  "The reliability equation W = a*T + b*S + c*SNR + d*DOP is the fixed decision rule; the coefficients are learned and context-dependent.",
                   "The model is compact: 1,108 trainable parameters and 32 stored normalization values.",
                   "Invalid, stale or unsupported inputs are rejected by explicit eligibility rules.",
                   "Whole sessions were kept separate between training, validation and testing.",
@@ -1073,7 +1075,7 @@ def viva_story(doc):
               numbered([
                   "Show the architecture diagram and explain the flow from two receivers through ESP32 and Raspberry Pi.",
                   "Show one combined serial-line example and identify each field including the C/N0.",
-                  "Show the preserved reliability equation and the fixed Model A coefficients.",
+                  "Show the reliability equation and the predefined Model A fallback coefficients.",
                   "Show the adaptive model: 16 features, 1,108 parameters, softmax weights feeding the equation.",
                   "Show the train, validation and test session split, then the held-out chart.",
                   "Show the eligibility checks, the hysteresis deadband and the fixed-weight fallback.",
@@ -1095,8 +1097,8 @@ def viva_story(doc):
         ("8. What is multipath?", "Multipath occurs when the receiver receives reflected copies of a satellite signal in addition to the direct path. The reflected path is longer, so the timing estimate can be biased and the position can jump."),
         ("9. State the reliability equation.", "W = a*T + b*S + c*SNR + d*DOP, where T is timing accuracy, S is the satellite-count term, SNR is the signal-quality term and DOP is inverted HDOP. We select the receiver with larger W."),
         ("10. What does each term in the equation mean?", "T = clip(1 - time_err/5, 0, 1), S = clip(sat/20, 0, 1), SNR = clip(cn0/50, 0, 1), DOP = clip(1/hdop, 0, 1). Each is normalized to 0 to 1."),
-        ("11. What were the original fixed weights?", "a=0.25, b=0.25, c=0.30, d=0.20. Today this is Model A; the live engine keeps them as the fallback."),
-        ("12. Why are hand-picked weights weak scientifically?", "They were selected by design choice rather than fitted to labelled receiver errors. There was no experiment showing signal quality deserves exactly 30 percent and geometry exactly 20 percent, and they never change with conditions."),
+        ("11. What are the predefined fallback weights?", "a=0.25, b=0.25, c=0.30, d=0.20. This is Model A; the live engine keeps them as an emergency fallback and they serve as a comparison baseline in the study."),
+        ("12. Why are predefined weights a weak primary method?", "They were selected by design choice rather than fitted to labelled receiver errors. There was no experiment showing signal quality deserves exactly 30 percent and geometry exactly 20 percent, and they never change with conditions."),
         ("13. Why is capping satellite count or HDOP a concern?", "It treats all counts above 20 (or all HDOP values below 1) as equal for that term. The system loses information that may still matter."),
         ("14. What is Model B?", "A fixed coefficient set found by grid search over the simplex at step 0.05 - 1,771 candidates evaluated on validation epochs. It selected a=0.10, b=0.20, c=0.00, d=0.70."),
         ("15. What does the learned model actually output?", "It outputs the four weights [a, b, c, d]. It does not predict a position or an error directly; the coefficients are plugged into the same reliability equation as before."),
@@ -1119,7 +1121,7 @@ def viva_story(doc):
         ("32. What happens when there is no GNSS fix?", "That receiver is marked unavailable. The engine uses the other eligible receiver if available, otherwise it reports no selection."),
         ("33. Why do you need hysteresis?", "Without it, very close scores can cause the selected source to flip every update, producing a noisy output track and more position jumps. Hysteresis keeps the previous selection until the difference crosses a threshold."),
         ("34. What hysteresis threshold is used live?", "0.05 by default, matching the best value in the simulation sweep. It is configurable and should be re-tuned on real data."),
-        ("35. Why is there a fixed-weight fallback?", "So the live system never depends on a single model file. If the model fails to load or returns abnormal weights, the engine uses the original fixed coefficients and keeps working."),
+        ("35. Why is there a fixed-weight fallback?", "So the live system never depends on a single model file. If the model fails to load or returns abnormal weights, the engine uses the predefined fixed coefficients and keeps working."),
         ("36. Does your system fuse the positions?", "No. It is a selector: it picks one receiver position. Sensor fusion would combine measurements using another estimator such as a Kalman filter, which is future work."),
         ("37. What is the role of ESP32?", "The ESP32 acquires two GNSS UART streams, parses them with TinyGPSPlus, tracks C/N0 from GSV sentences and sends a compact combined message over serial."),
         ("38. What serial format does the ESP32 use?", "Two receiver records separated by a vertical bar: GPS,time,lat,lon,sat,hdop,snr | GNSS,time,lat,lon,sat,hdop,snr. Latitude/longitude are NO_FIX when there is no fix."),
@@ -1143,7 +1145,7 @@ def viva_story(doc):
                   ["Fact", "Answer"],
                   ["Project goal", "Choose the receiver with the larger reliability score and learn the score's weights adaptively."],
                   ["Decision rule", "W = a*T + b*S + c*SNR + d*DOP; argmax(W) among available receivers."],
-                  ["Original issue", "Hand-set weights that never adapt to conditions."],
+                  ["Predefined fallback", "Predefined coefficients (0.25/0.25/0.30/0.20) that never adapt; used only as a fallback and baseline."],
                   ["Conditioning input", "16 features from both receivers: reliability indicators, deltas and temporal statistics."],
                   ["Architecture", "16 -> 24 ReLU -> 24 ReLU -> 4 softmax [a,b,c,d]."],
                   ["Trainable parameters", "1,108"],
