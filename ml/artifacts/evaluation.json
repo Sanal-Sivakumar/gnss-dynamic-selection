@@ -1,0 +1,285 @@
+{
+  "synthetic_only": true,
+  "baselines": {
+    "original_fixed_weights_model_A": {
+      "selection_accuracy_vs_oracle": 0.6127631139325092,
+      "mean_error_m": 3.508683033430351,
+      "median_error_m": 2.5558483600616455,
+      "rmse_m": 4.912896102104497,
+      "p95_error_m": 9.279159307479858,
+      "switches": 1788
+    },
+    "optimized_fixed_weights_model_B": {
+      "selection_accuracy_vs_oracle": 0.6157701303040428,
+      "mean_error_m": 3.4882920703007736,
+      "median_error_m": 2.5375896692276,
+      "rmse_m": 4.8561935965834335,
+      "p95_error_m": 9.2197744846344,
+      "switches": 1768
+    },
+    "dynamic_ml_weights_model_C": {
+      "selection_accuracy_vs_oracle": 0.6261276311393251,
+      "mean_error_m": 3.435490124456266,
+      "median_error_m": 2.510990023612976,
+      "rmse_m": 4.777071582208546,
+      "p95_error_m": 8.88564133644104,
+      "switches": 1767
+    }
+  },
+  "hysteresis_sweep": {
+    "0.0": {
+      "available_epochs": 5986,
+      "selection_accuracy_vs_oracle": 0.6261276311393251,
+      "mean_error_m": 3.435490124456266,
+      "median_error_m": 2.510990023612976,
+      "rmse_m": 4.777071582208546,
+      "p95_error_m": 8.88564133644104,
+      "max_error_m": 37.12855529785156,
+      "switches": 1767,
+      "beneficial_switches": 927,
+      "unnecessary_switches": 840,
+      "mean_duration_s": 3.3348189415041785
+    },
+    "0.02": {
+      "available_epochs": 5986,
+      "selection_accuracy_vs_oracle": 0.6364851319746074,
+      "mean_error_m": 3.4131790690822292,
+      "median_error_m": 2.4946579933166504,
+      "rmse_m": 4.752481262976143,
+      "p95_error_m": 8.822592496871948,
+      "max_error_m": 37.12855529785156,
+      "switches": 1314,
+      "beneficial_switches": 694,
+      "unnecessary_switches": 620,
+      "mean_duration_s": 4.460506706408346
+    },
+    "0.05": {
+      "available_epochs": 5986,
+      "selection_accuracy_vs_oracle": 0.6404944871366521,
+      "mean_error_m": 3.3942232047053005,
+      "median_error_m": 2.4894851446151733,
+      "rmse_m": 4.724091073517253,
+      "p95_error_m": 8.726556539535522,
+      "max_error_m": 37.12855529785156,
+      "switches": 1018,
+      "beneficial_switches": 547,
+      "unnecessary_switches": 471,
+      "mean_duration_s": 5.722753346080306
+    },
+    "0.1": {
+      "available_epochs": 5986,
+      "selection_accuracy_vs_oracle": 0.6384898095556298,
+      "mean_error_m": 3.406603762327335,
+      "median_error_m": 2.510990023612976,
+      "rmse_m": 4.7649828303445485,
+      "p95_error_m": 8.69020700454712,
+      "max_error_m": 46.14495086669922,
+      "switches": 716,
+      "beneficial_switches": 376,
+      "unnecessary_switches": 340,
+      "mean_duration_s": 8.045698924731182
+    }
+  },
+  "ablation": {
+    "T only": {
+      "feature_groups": [
+        "T"
+      ],
+      "columns": [
+        0,
+        4
+      ],
+      "best_epoch": 3,
+      "selection_accuracy": 0.6139325091881056,
+      "mean_error_m": 3.504311869827974,
+      "switches": 1839
+    },
+    "S only": {
+      "feature_groups": [
+        "S"
+      ],
+      "columns": [
+        1,
+        5
+      ],
+      "best_epoch": 4,
+      "selection_accuracy": 0.6217841630471099,
+      "mean_error_m": 3.4567365246372797,
+      "switches": 1758
+    },
+    "SNR only": {
+      "feature_groups": [
+        "SNR"
+      ],
+      "columns": [
+        2,
+        6
+      ],
+      "best_epoch": 3,
+      "selection_accuracy": 0.6157701303040428,
+      "mean_error_m": 3.5036342222859034,
+      "switches": 1868
+    },
+    "DOP only": {
+      "feature_groups": [
+        "DOP"
+      ],
+      "columns": [
+        3,
+        7
+      ],
+      "best_epoch": 3,
+      "selection_accuracy": 0.6135983962579352,
+      "mean_error_m": 3.517835675336724,
+      "switches": 1901
+    },
+    "T + S": {
+      "feature_groups": [
+        "T",
+        "S"
+      ],
+      "columns": [
+        0,
+        1,
+        4,
+        5
+      ],
+      "best_epoch": 4,
+      "selection_accuracy": 0.6144336785833612,
+      "mean_error_m": 3.5050023074056162,
+      "switches": 1868
+    },
+    "T + S + SNR": {
+      "feature_groups": [
+        "T",
+        "S",
+        "SNR"
+      ],
+      "columns": [
+        0,
+        1,
+        2,
+        4,
+        5,
+        6
+      ],
+      "best_epoch": 3,
+      "selection_accuracy": 0.6146007350484464,
+      "mean_error_m": 3.480547279988892,
+      "switches": 1719
+    },
+    "all four": {
+      "feature_groups": [
+        "T",
+        "S",
+        "SNR",
+        "DOP"
+      ],
+      "columns": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "best_epoch": 3,
+      "selection_accuracy": 0.6221182759772803,
+      "mean_error_m": 3.467971630957982,
+      "switches": 1842
+    },
+    "all four + comparative": {
+      "feature_groups": [
+        "T",
+        "S",
+        "SNR",
+        "DOP",
+        "delta"
+      ],
+      "columns": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "best_epoch": 5,
+      "selection_accuracy": 0.6246241229535583,
+      "mean_error_m": 3.4504272319663363,
+      "switches": 1757
+    },
+    "all four + temporal (full)": {
+      "feature_groups": [
+        "T",
+        "S",
+        "SNR",
+        "DOP",
+        "delta",
+        "temporal"
+      ],
+      "columns": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "best_epoch": 5,
+      "selection_accuracy": 0.627798195790177,
+      "mean_error_m": 3.440394584507415,
+      "switches": 1750
+    }
+  },
+  "research_questions": [
+    [
+      "RQ1",
+      "Does the original reliability equation select the better receiver consistently?",
+      "A baseline selects for accuracy 61.3% of available epochs (mean error 3.51 m) - it is reasonable but not optimal."
+    ],
+    [
+      "RQ2",
+      "Can fixed coefficients be optimized from available data?",
+      "Yes - optimized fixed weights reduce mean error from 3.51 m (A) to 3.49 m (B), a small but real gain."
+    ],
+    [
+      "RQ3",
+      "Does context-dependent ML weighting improve over the original fixed coefficients?",
+      "Model C mean error 3.44 m vs 3.51 m (A); with hysteresis 3.39 m. Improvement is modest and should not be overstated."
+    ],
+    [
+      "RQ4",
+      "Does context-dependent weighting outperform a single globally optimized set?",
+      "C mean error 3.435 m vs B 3.488 m - the ML gain over a good fixed set is small; context modulation is visible in the learned-weight analysis."
+    ],
+    [
+      "RQ5",
+      "Are the learned weights interpretable and related to GNSS conditions?",
+      "Yes - weights shift strongly by condition (e.g. DOP ~0.99 in open sky vs satellite/timing weights dominating in urban multipath); see metrics.json learned_weights."
+    ],
+    [
+      "RQ6",
+      "Does the adaptive method introduce excessive switching?",
+      "Model C produces 1767 switches vs A 1788 (similar); hysteresis reduces them to 1018 with improved accuracy."
+    ]
+  ]
+}

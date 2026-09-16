@@ -28,12 +28,23 @@ h2 { margin-top: 10px; }
     background: #1e293b;
     padding: 15px;
     border-radius: 10px;
-    width: 200px;
+    width: 210px;
 }
 
 .active {
     border: 2px solid #22c55e;
 }
+
+.badge {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 8px;
+    font-size: 12px;
+    background: #334155;
+}
+
+.badge.ml { background: #7c3aed; }
+.badge.fixed { background: #b45309; }
 
 #map {
     height: 400px;
@@ -52,20 +63,25 @@ h2 { margin-top: 10px; }
     <div id="gpsCard" class="card">
         <h3>GPS</h3>
         <p>Sat: <span id="gps_sat">-</span></p>
-        <p>Weight: <span id="gps_w">-</span></p>
+        <p>SNR: <span id="gps_snr">-</span></p>
+        <p>W: <span id="gps_w">-</span></p>
     </div>
 
     <div id="gnssCard" class="card">
         <h3>GNSS</h3>
         <p>Sat: <span id="gnss_sat">-</span></p>
-        <p>Weight: <span id="gnss_w">-</span></p>
+        <p>SNR: <span id="gnss_snr">-</span></p>
+        <p>W: <span id="gnss_w">-</span></p>
     </div>
 </div>
 
-<div class="card">
-    <b>Selected:</b> <span id="src">-</span><br>
-    <b>Lat:</b> <span id="lat">-</span><br>
-    <b>Lon:</b> <span id="lon">-</span>
+<div class="card" style="width: 420px;">
+    <b>Selected:</b> <span id="src">-</span>
+    <span id="mode" class="badge">-</span><br>
+    <b>Reason:</b> <span id="reason">-</span><br>
+    <b>Lat:</b> <span id="lat">-</span> &nbsp;
+    <b>Lon:</b> <span id="lon">-</span><br>
+    <b>Weights αβγδ:</b> <span id="weights">-</span>
 </div>
 
 <div id="map"></div>
@@ -84,16 +100,37 @@ function update() {
         document.getElementById("src").innerText = data.source;
         document.getElementById("lat").innerText = data.lat;
         document.getElementById("lon").innerText = data.lon;
+        document.getElementById("reason").innerText = data.reason || "-";
+        document.getElementById("weights").innerText =
+            data.weights ? data.weights.map(w => w.toFixed(2)).join(", ") : "-";
 
-        marker.setLatLng([data.lat, data.lon]);
+        var mode = document.getElementById("mode");
+        mode.className = "badge" + (data.ml_used ? " ml" : " fixed");
+        mode.innerText = data.ml_used === true ? "ML" :
+                         (data.ml_used === false ? "FIXED" : "-");
+
+        if (data.lat !== null && data.lon !== null) {
+            marker.setLatLng([data.lat, data.lon]);
+        }
 
         document.getElementById("gpsCard").classList.remove("active");
         document.getElementById("gnssCard").classList.remove("active");
 
         if (data.source === "GPS") {
             document.getElementById("gpsCard").classList.add("active");
-        } else {
+        } else if (data.source === "GNSS") {
             document.getElementById("gnssCard").classList.add("active");
+        }
+
+        if (data.w_scores) {
+            document.getElementById("gps_w").innerText = data.w_scores[0].toFixed(3);
+            document.getElementById("gnss_w").innerText = data.w_scores[1].toFixed(3);
+        }
+        if (data.instrument) {
+            document.getElementById("gps_sat").innerText = data.instrument.sat[0];
+            document.getElementById("gnss_sat").innerText = data.instrument.sat[1];
+            document.getElementById("gps_snr").innerText = data.instrument.snr[0] ?? "-";
+            document.getElementById("gnss_snr").innerText = data.instrument.snr[1] ?? "-";
         }
     });
 }

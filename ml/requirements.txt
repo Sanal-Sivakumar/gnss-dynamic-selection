@@ -1,0 +1,2 @@
+# Pure-NumPy training and inference (portable; no GPU/MLX required).
+numpy==2.4.6
