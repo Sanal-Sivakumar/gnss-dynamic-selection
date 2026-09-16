@@ -26,6 +26,64 @@
       "switches": 1767
     }
   },
+  "confusion": {
+    "original_fixed_weights_model_A": {
+      "n": 5986,
+      "accuracy_vs_oracle": 0.6127631139325092,
+      "matrix": [
+        [
+          1455,
+          836
+        ],
+        [
+          1482,
+          2213
+        ]
+      ]
+    },
+    "optimized_fixed_weights_model_B": {
+      "n": 5986,
+      "accuracy_vs_oracle": 0.6157701303040428,
+      "matrix": [
+        [
+          1466,
+          825
+        ],
+        [
+          1475,
+          2220
+        ]
+      ]
+    },
+    "dynamic_ml_weights_model_C": {
+      "n": 5986,
+      "accuracy_vs_oracle": 0.6261276311393251,
+      "matrix": [
+        [
+          1363,
+          928
+        ],
+        [
+          1310,
+          2385
+        ]
+      ]
+    },
+    "dynamic_ml_with_hysteresis": {
+      "n": 5986,
+      "accuracy_vs_oracle": 0.6404944871366521,
+      "matrix": [
+        [
+          1396,
+          895
+        ],
+        [
+          1257,
+          2438
+        ]
+      ]
+    }
+  },
   "hysteresis_sweep": {
     "0.0": {
       "available_epochs": 5986,

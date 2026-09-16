@@ -14,7 +14,7 @@ from generate import generate, SCENARIOS
 from features import build_features, reliability_scores, eligible, FEATURE_GROUPS
 from predict import DynamicWeights, select_scores, FIXED_FALLBACK_WEIGHTS
 from baselines import MODEL_A_WEIGHTS, reliability as fixed_reliability, grid_search_optimal_weights
-from metrics import evaluate_selection, apply_hysteresis_sessions
+from metrics import evaluate_selection, apply_hysteresis_sessions, selection_confusion
 from train import load_config, session_split, fit_dynamic_weights, logits, softmax_weights
 
 OUT = Path(__file__).parent / 'artifacts'
@@ -115,12 +115,35 @@ def main():
               f"acc={r['selection_accuracy_vs_oracle']*100:.1f}%  "
               f"switches={r['switches']}")
 
+    print('\n=== Confusion matrices (selector vs oracle, test split) ===')
+    mtest = json.loads((OUT / 'metrics.json').read_text())
+    wA_cf = fixed_reliability(MODEL_A_WEIGHTS, terms)
+    wB_cf = fixed_reliability(
+        np.array([mtest['model_B_weights'][k] for k in ('alpha', 'beta', 'gamma', 'delta')]),
+        terms)
+    wC_cf = dm.reliability(dm.weights(F), terms)
+    confusion = {}
+    for name, wsel, thr in [
+            ('original_fixed_weights_model_A', wA_cf, None),
+            ('optimized_fixed_weights_model_B', wB_cf, None),
+            ('dynamic_ml_weights_model_C', wC_cf, None),
+            ('dynamic_ml_with_hysteresis', wC_cf, cfg['hysteresis_thresholds'][2])]:
+        if thr is None:
+            dec = select_scores(wsel, available)[test_rows]
+        else:
+            dec = apply_hysteresis_sessions(wsel, available, data['session'], thr)[test_rows]
+        rc = selection_confusion(dec, y[test_rows], available[test_rows])
+        confusion[name] = rc
+        print(f"{name:38s} n={rc['n']} acc={rc['accuracy_vs_oracle']*100:.1f}%  "
+              f"matrix={rc['matrix']}")
+
     summary = {
         'synthetic_only': True,
         'baselines': {n: {k: test[n][k] for k in
                           ['selection_accuracy_vs_oracle', 'mean_error_m',
                            'median_error_m', 'rmse_m', 'p95_error_m', 'switches']}
                       for n in names},
+        'confusion': confusion,
         'hysteresis_sweep': sweep,
         'ablation': ablation,
         'research_questions': answers(cfg, test),

@@ -59,12 +59,25 @@ BLUE = HexColor("#1769AA")
 TEAL = HexColor("#0A7C86")
 GOLD = HexColor("#B8860B")
 GRAY = HexColor("#8A97A5")
-INK = HexColor("#1B2631")
-MUTED = HexColor("#52616B")
-PALE = HexColor("#EEF4F8")
-GRID = HexColor("#C9D5DF")
+INK = HexColor("#000000")
+MUTED = HexColor("#3D3D3D")
+PALE = HexColor("#F2F2F2")
+GRID = HexColor("#B9B9B9")
 WHITE = colors.white
 PAGE_W, PAGE_H = A4
+
+# Editable cover / certificate details (replace placeholders before submission).
+STUDENT_NAME = "Sanal Sivakumar"
+REGISTER_NO = "________________"
+SEMESTER = "VIII Semester"
+ACADEMIC_YEAR = "2026"
+INST_LINE_1 = "DIVISION OF COMPUTER SCIENCE AND ENGINEERING"
+INST_LINE_2 = "SCHOOL OF ENGINEERING"
+INST_LINE_3 = "COCHIN UNIVERSITY OF SCIENCE AND TECHNOLOGY"
+GUIDE_NAME = "________________"
+GUIDE_DESIGNATION = "Project Guide"
+GUIDE_CONTACT = "________________"
+COVER_DATE = "September 2026"
 
 # Model C results with and without the live-default hysteresis threshold.
 MODEL_KEYS = [
@@ -83,74 +96,111 @@ def escape(text: str) -> str:
             .replace(">", "&gt;"))
 
 
+def to_roman(n):
+    vals = [(1000, "m"), (900, "cm"), (500, "d"), (400, "cd"), (100, "c"),
+            (90, "xc"), (50, "l"), (40, "xl"), (10, "x"), (9, "ix"),
+            (5, "v"), (4, "iv"), (1, "i")]
+    out = ""
+    for value, sym in vals:
+        while n >= value:
+            out += sym
+            n -= value
+    return out
+
+
 def make_styles():
     base = getSampleStyleSheet()
     return {
         "body": ParagraphStyle(
-            "Body", parent=base["BodyText"], fontName="Times-Roman", fontSize=10.4,
-            leading=15.2, alignment=TA_JUSTIFY, textColor=INK, spaceAfter=7,
+            "Body", parent=base["BodyText"], fontName="Times-Roman", fontSize=11.5,
+            leading=17.5, alignment=TA_JUSTIFY, textColor=INK, spaceAfter=7,
         ),
         "body_small": ParagraphStyle(
-            "BodySmall", parent=base["BodyText"], fontName="Times-Roman", fontSize=9.2,
-            leading=13, alignment=TA_JUSTIFY, textColor=INK, spaceAfter=5,
+            "BodySmall", parent=base["BodyText"], fontName="Times-Roman", fontSize=10.3,
+            leading=14.8, alignment=TA_JUSTIFY, textColor=INK, spaceAfter=5,
         ),
         "title": ParagraphStyle(
-            "Title", fontName="Times-Bold", fontSize=24, leading=30,
-            alignment=TA_CENTER, textColor=INK, spaceAfter=10,
+            "Title", fontName="Times-Bold", fontSize=22, leading=30,
+            alignment=TA_CENTER, textColor=INK, spaceAfter=8,
         ),
         "subtitle": ParagraphStyle(
-            "Subtitle", fontName="Times-Roman", fontSize=14, leading=20,
-            alignment=TA_CENTER, textColor=INK, spaceAfter=7,
+            "Subtitle", fontName="Times-Roman", fontSize=13, leading=20,
+            alignment=TA_CENTER, textColor=INK, spaceAfter=6,
         ),
         "cover_meta": ParagraphStyle(
-            "CoverMeta", fontName="Times-Roman", fontSize=11.5, leading=18,
-            alignment=TA_CENTER, textColor=INK, spaceAfter=2,
+            "CoverMeta", fontName="Times-Roman", fontSize=12, leading=19,
+            alignment=TA_CENTER, textColor=INK, spaceAfter=3,
         ),
         "cover_label": ParagraphStyle(
-            "CoverLabel", fontName="Times-Bold", fontSize=11.5, leading=18,
-            alignment=TA_CENTER, textColor=INK, spaceAfter=2,
+            "CoverLabel", fontName="Times-Bold", fontSize=12, leading=19,
+            alignment=TA_CENTER, textColor=INK, spaceAfter=3,
+        ),
+        "cover_title": ParagraphStyle(
+            "CoverTitle", fontName="Times-Bold", fontSize=17, leading=24,
+            alignment=TA_CENTER, textColor=INK, spaceAfter=6,
+        ),
+        "cover_head": ParagraphStyle(
+            "CoverHead", fontName="Times-Bold", fontSize=13, leading=20,
+            alignment=TA_CENTER, textColor=INK,
         ),
         "h1": ParagraphStyle(
-            "Heading1", parent=base["Heading1"], fontName="Times-Bold", fontSize=15,
-            leading=19, textColor=NAVY, spaceBefore=14, spaceAfter=9,
+            "Heading1", parent=base["Heading1"], fontName="Times-Bold", fontSize=14,
+            leading=19, textColor=INK, spaceBefore=14, spaceAfter=7,
             keepWithNext=True,
         ),
         "h2": ParagraphStyle(
-            "Heading2", parent=base["Heading2"], fontName="Times-Bold", fontSize=11.7,
-            leading=15, textColor=INK, spaceBefore=10, spaceAfter=5,
+            "Heading2", parent=base["Heading2"], fontName="Times-Bold", fontSize=11.8,
+            leading=16, textColor=INK, spaceBefore=9, spaceAfter=4,
             keepWithNext=True,
         ),
         "h3": ParagraphStyle(
-            "Heading3", parent=base["Heading3"], fontName="Times-BoldItalic", fontSize=10.5,
-            leading=14, textColor=INK, spaceBefore=8, spaceAfter=4,
+            "Heading3", parent=base["Heading3"], fontName="Times-BoldItalic", fontSize=10.8,
+            leading=15, textColor=INK, spaceBefore=7, spaceAfter=3,
             keepWithNext=True,
         ),
         "caption": ParagraphStyle(
-            "Caption", fontName="Times-Italic", fontSize=8.7, leading=11,
-            alignment=TA_CENTER, textColor=MUTED, spaceBefore=3, spaceAfter=8,
+            "Caption", fontName="Times-Italic", fontSize=9.3, leading=12,
+            alignment=TA_CENTER, textColor=INK, spaceBefore=3, spaceAfter=8,
+        ),
+        "cert": ParagraphStyle(
+            "Cert", parent=base["BodyText"], fontName="Times-Roman", fontSize=12,
+            leading=20, alignment=TA_JUSTIFY, textColor=INK, spaceAfter=8,
+        ),
+        "cert_sig": ParagraphStyle(
+            "CertSig", parent=base["BodyText"], fontName="Times-Roman", fontSize=12,
+            leading=16, textColor=INK,
         ),
         "toc": ParagraphStyle(
-            "TOC", fontName="Times-Roman", fontSize=8.7, leading=11.7, leftIndent=8,
-            firstLineIndent=-8, textColor=INK,
+            "TOC", parent=base["BodyText"], fontName="Times-Roman", fontSize=11,
+            leading=16.5, leftIndent=14, firstLineIndent=-14, textColor=INK,
         ),
         "toc_h1": ParagraphStyle(
-            "TOCH1", fontName="Times-Bold", fontSize=8.7, leading=11.7, leftIndent=8,
-            firstLineIndent=-8, textColor=INK,
+            "TOCH1", parent=base["BodyText"], fontName="Times-Bold", fontSize=11,
+            leading=16.5, leftIndent=14, firstLineIndent=-14, textColor=INK,
         ),
         "quote": ParagraphStyle(
-            "Quote", parent=base["BodyText"], fontName="Times-Italic", fontSize=10,
-            leading=14, leftIndent=12, rightIndent=12, textColor=INK, spaceBefore=6, spaceAfter=7,
+            "Quote", parent=base["BodyText"], fontName="Times-Italic", fontSize=11,
+            leading=16, leftIndent=12, rightIndent=12, textColor=INK, spaceBefore=6, spaceAfter=7,
         ),
         "table": ParagraphStyle(
-            "Table", parent=base["BodyText"], fontName="Times-Roman", fontSize=8.3,
-            leading=10.7, textColor=INK,
+            "Table", parent=base["BodyText"], fontName="Times-Roman", fontSize=9,
+            leading=12, textColor=INK,
         ),
         "table_head": ParagraphStyle(
-            "TableHead", parent=base["BodyText"], fontName="Times-Bold", fontSize=8.3,
-            leading=10.5, textColor=WHITE, alignment=TA_CENTER,
+            "TableHead", parent=base["BodyText"], fontName="Times-Bold", fontSize=9,
+            leading=12, textColor=WHITE, alignment=TA_CENTER,
         ),
         "code": ParagraphStyle(
-            "Code", fontName="Courier", fontSize=7.4, leading=9.2, textColor=INK,
+            "Code", fontName="Courier-Bold", fontSize=8, leading=11, textColor=INK,
+        ),
+        "front_head": ParagraphStyle(
+            "FrontHead", parent=base["Heading1"], fontName="Times-Bold", fontSize=14,
+            leading=19, textColor=INK, spaceBefore=4, spaceAfter=7,
+            keepWithNext=True, alignment=TA_LEFT,
+        ),
+        "figcap": ParagraphStyle(
+            "FigCaption", fontName="Times-Roman", fontSize=9.5, leading=12.5,
+            alignment=TA_CENTER, textColor=INK, spaceBefore=4, spaceAfter=8,
         ),
         "key": ParagraphStyle(
             "Key", parent=base["BodyText"], fontName="Helvetica-Bold", fontSize=8.8,
@@ -166,38 +216,53 @@ class AcademicDoc(BaseDocTemplate):
     def __init__(self, filename, label, **kwargs):
         super().__init__(filename, **kwargs)
         self.label = label
-        frame = Frame(21 * mm, 19 * mm, PAGE_W - 42 * mm, PAGE_H - 38 * mm,
+        self._body_start = None
+        frame = Frame(23 * mm, 20 * mm, PAGE_W - 46 * mm, PAGE_H - 44 * mm,
                       leftPadding=0, rightPadding=0, topPadding=0, bottomPadding=0)
         self.addPageTemplates([])
         from reportlab.platypus import PageTemplate
-        self.addPageTemplates([PageTemplate(id="academic", frames=frame, onPage=self._footer)])
+        self.addPageTemplates([PageTemplate(id="academic", frames=frame, onPage=self._pagenum)])
 
-    def _footer(self, canvas, doc):
+    def _pagenum(self, canvas, doc):
+        page = doc.page
+        if page == 1:
+            return
         canvas.saveState()
-        canvas.setStrokeColor(GRID)
-        canvas.setLineWidth(0.4)
-        canvas.line(21 * mm, 14.5 * mm, PAGE_W - 21 * mm, 14.5 * mm)
-        canvas.setFont("Helvetica", 7.4)
-        canvas.setFillColor(MUTED)
-        canvas.drawString(21 * mm, 9.8 * mm, self.label)
-        canvas.drawRightString(PAGE_W - 21 * mm, 9.8 * mm, f"Page {doc.page}")
+        canvas.setFont("Times-Roman", 10.5)
+        canvas.setFillColor(INK)
+        if self._body_start is None or page < self._body_start:
+            label = to_roman(page)
+        else:
+            label = str(page - self._body_start + 1)
+        canvas.drawCentredString(PAGE_W / 2, 9.5 * mm, label)
         canvas.restoreState()
+
+    def body_page_label(self, page):
+        if self._body_start is None or page < self._body_start:
+            return to_roman(page)
+        return str(page - self._body_start + 1)
 
     def afterFlowable(self, flowable):
         if isinstance(flowable, Paragraph):
             style = flowable.style.name
+            text = flowable.getPlainText()
             if style == "Heading1":
-                text = flowable.getPlainText()
+                import re as _re
+                if self._body_start is None and _re.match(r"^\d+\.", text):
+                    self._body_start = self.page
                 key = "h1-" + str(doc_safe_id(text))
                 self.canv.bookmarkPage(key)
                 self.canv.addOutlineEntry(text, key, 0, False)
                 self.notify("TOCEntry", (0, text, self.page, key))
             elif style == "Heading2":
-                text = flowable.getPlainText()
                 key = "h2-" + str(doc_safe_id(text))
                 self.canv.bookmarkPage(key)
                 self.canv.addOutlineEntry(text, key, 1, False)
                 self.notify("TOCEntry", (1, text, self.page, key))
+            elif style == "FigCaption":
+                key = "fig-" + str(doc_safe_id(text))
+                self.canv.bookmarkPage(key)
+                self.notify("FigEntry", (0, text, self.page, key))
 
 
 def doc_safe_id(text: str) -> str:
@@ -222,6 +287,10 @@ def h3(text: str):
 
 def caption(text: str):
     return Paragraph(text, S["caption"])
+
+
+def figcaption(text: str):
+    return Paragraph(text, S["figcap"])
 
 
 def bullets(items, style="body_small"):
@@ -393,60 +462,174 @@ def scenario_chart():
     return d
 
 
+def confusion_matrix_drawing(key="dynamic_ml_with_hysteresis", width=440, height=255):
+    """Heat-map of the 2x2 selector-vs-oracle counts for one selector.
+
+    Rows are the receiver the oracle would have chosen (lower actual error);
+    columns are the receiver the selector actually picked. The diagonal is
+    agreement; the off-diagonal cells are the mistaken picks.
+    """
+    cm = EVAL["confusion"][key]
+    m = cm["matrix"]
+    n = cm["n"]
+    acc = cm["accuracy_vs_oracle"]
+    d = Drawing(width, height)
+    cell_w = 92
+    cell_h = 62
+    ox, oy = 118, 46
+    row_labels = ["Oracle: receiver 0\nhad the lower error",
+                  "Oracle: receiver 1\nhad the lower error"]
+    col_labels = ["Selected\nreceiver 0", "Selected\nreceiver 1"]
+    for c, label in enumerate(col_labels):
+        d.add(String(ox + c * cell_w + cell_w / 2, oy + 2 * cell_h + 30, label,
+                     textAnchor="middle", fontName="Helvetica-Bold",
+                     fontSize=7.6, fillColor=INK))
+    for r, label in enumerate(row_labels):
+        d.add(String(ox - 46, oy + (1 - r) * cell_h + cell_h / 2.45, label,
+                     textAnchor="middle", fontName="Helvetica", fontSize=6.8,
+                     fillColor=MUTED))
+    for r in range(2):
+        for c in range(2):
+            val = m[r][c]
+            pct = val / n * 100
+            frac = val / n
+            if r == c:
+                intensity = round(0.10 + 0.85 * frac)
+                fill = HexColor("#%02x%02x%02x" % (int(255 - 70 * frac),
+                                                   int(255 - 20 * frac),
+                                                   int(255 - 60 * frac)))
+            else:
+                fill = HexColor("#%02x%02x%02x" % (255, int(235 - 90 * frac),
+                                                   int(230 - 90 * frac)))
+            d.add(Rect(ox + c * cell_w, oy + (1 - r) * cell_h, cell_w, cell_h,
+                       fillColor=fill, strokeColor=GRID, strokeWidth=0.6))
+            d.add(String(ox + c * cell_w + cell_w / 2,
+                         oy + (1 - r) * cell_h + cell_h / 2 + 6,
+                         f"{val:,}", textAnchor="middle",
+                         fontName="Helvetica-Bold", fontSize=13, fillColor=INK))
+            d.add(String(ox + c * cell_w + cell_w / 2,
+                         oy + (1 - r) * cell_h + cell_h / 2 - 10,
+                         f"{pct:.1f}%", textAnchor="middle",
+                         fontName="Helvetica", fontSize=7.5, fillColor=MUTED))
+    d.add(String(width / 2, height - 8, f"n = {n:,} available test epochs"
+                 f"      oracle agreement = {acc*100:.1f}%",
+                 textAnchor="middle", fontName="Helvetica-Bold", fontSize=8,
+                 fillColor=INK))
+    d.add(String(width / 2, 16, "Diagonal: selector agrees with the oracle.  "
+                 "Off diagonal: selector picked the other receiver.",
+                 textAnchor="middle", fontName="Helvetica", fontSize=6.6,
+                 fillColor=MUTED))
+    return d
+
+
 def cover_page(title, subtitle, kind, author="Sanal Sivakumar"):
-    story = [Spacer(1, 20 * mm)]
-    story.append(Paragraph(kind.upper(), S["cover_label"]))
-    story.append(Spacer(1, 10 * mm))
-    story.append(Paragraph(title, S["title"]))
-    story.append(Paragraph(subtitle, S["subtitle"]))
-    story.append(Spacer(1, 17 * mm))
-    banner = ROOT / "docs" / "banner.png"
-    if banner.exists():
-        story.append(Image(str(banner), width=15.7 * cm, height=7.85 * cm, hAlign="CENTER"))
-    story.append(Spacer(1, 14 * mm))
-    story.append(Paragraph("Prepared by", S["cover_label"]))
-    story.append(Paragraph(author, S["cover_meta"]))
-    story.append(Paragraph("Register Number: ____________________", S["cover_meta"]))
-    story.append(Spacer(1, 7 * mm))
-    story.append(Paragraph("Department / Institution: ____________________", S["cover_meta"]))
-    story.append(Paragraph("Project Guide: ____________________", S["cover_meta"]))
-    story.append(Spacer(1, 14 * mm))
-    story.append(Paragraph("September 2026", S["cover_meta"]))
-    story.append(PageBreak())
+    return [
+        Paragraph(kind.upper(), S["cover_label"]),
+        Paragraph("B.Tech in Computer Science and Engineering", S["cover_title"]),
+        Spacer(1, 6 * mm),
+        Paragraph(INST_LINE_1, S["cover_meta"]),
+        Paragraph(INST_LINE_2, S["cover_meta"]),
+        Paragraph(INST_LINE_3, S["cover_meta"]),
+        Spacer(1, 18 * mm),
+        Paragraph(author, S["cover_title"]),
+        Paragraph(REGISTER_NO, S["cover_meta"]),
+        Spacer(1, 12 * mm),
+        Paragraph("Project Details", S["cover_label"]),
+        Paragraph(title, S["cover_meta"]),
+        Paragraph(subtitle, S["cover_meta"]),
+        Spacer(1, 12 * mm),
+        Paragraph("Guide Details", S["cover_label"]),
+        Paragraph(GUIDE_NAME, S["cover_meta"]),
+        Paragraph(GUIDE_DESIGNATION, S["cover_meta"]),
+        Paragraph(GUIDE_CONTACT, S["cover_meta"]),
+        Spacer(1, 16 * mm),
+        Paragraph(COVER_DATE.upper(), S["cover_label"]),
+        PageBreak(),
+    ]
+
+
+def certificate_page():
+    return [
+        Paragraph(INST_LINE_1, S["cover_label"]),
+        Paragraph(INST_LINE_2, S["cover_label"]),
+        Paragraph(INST_LINE_3, S["cover_label"]),
+        Spacer(1, 8 * mm),
+        Paragraph("CERTIFICATE", S["cover_title"]),
+        Spacer(1, 8 * mm),
+        p("Certified that this is a Bonafide record of the project work done by "
+          + f"<b>{escape(STUDENT_NAME)}</b> ({escape(REGISTER_NO)}) of {SEMESTER}, Computer Science and Engineering "
+          + f"in the year {ACADEMIC_YEAR} in partial fulfilment of the requirements for the award of the Degree of "
+          + "Bachelor of Technology in Computer Science and Engineering of Cochin University of Science and "
+          + "Technology with distinction.", "cert"),
+        Spacer(1, 30 * mm),
+        Table([[Paragraph(("\u2003" * 8) + "_______________________________", S["cert_sig"]),
+                Paragraph(("\u2003" * 8) + "_______________________________", S["cert_sig"])],
+               [Paragraph("Project Guide", S["cert_sig"]),
+                Paragraph("Head of Division", S["cert_sig"])]],
+              colWidths=[9.5 * cm, 9.5 * cm], hAlign="CENTER"),
+        PageBreak(),
+    ]
+
+
+def front_matter(doc):
+    story = [h1("Acknowledgment")]
+    story += [p("I would like to convey my heartfelt gratitude to all those who supported and guided me "
+                "throughout this project. I am especially thankful to my project guide for constant support, "
+                "valuable feedback and encouragement at every stage of this work. His guidance helped shape a "
+                "vague idea into a complete, well-tested system."),
+              p("I am profoundly grateful to the Head of Division for the academic environment and for allowing "
+                "the use of the facilities needed to build and test the hardware and software components of this "
+                "project. I also thank the faculty members whose courses in embedded systems, machine learning and "
+                "probability provided the foundation for the techniques used here."),
+              p("I extend sincere thanks to my classmates and friends for reviewing the design, pointing out "
+                "ambiguities and helping me debug the trickier parts of the pipeline. Finally, I thank my parents "
+                "for their un- wavering support, patience and for everything they have done for me."),
+              PageBreak()]
+
+    story += [h1("Abstract")]
+    story += [p("Low-cost GNSS receivers can disagree because satellite visibility, geometry, signal quality, "
+                "multipath and stale observations vary over time. Selecting one receiver with a fixed hand-"
+                "designed score can hide these interactions. This project keeps the original reliability equation "
+                "W = a*T + b*S + c*SNR + d*DOP unchanged and instead learns the coefficients context-dependently: "
+                "a compact neural network maps current GNSS conditions to [a, b, c, d], so the same "
+                "self-explanatory formula is used everywhere while its weights adapt."),
+              p("The hardware pipeline uses two GNSS data streams acquired by an ESP32 with a per-second C/N0 "
+                "tracker, a Raspberry Pi decision engine that applies the learned weights with a switching "
+                "deadband (hysteresis) and a fixed-weight fallback, and a Flask web view. The offline experiment "
+                "conditions the weight network on 16 features derived from both receivers (raw reliability "
+                "indicators, comparative deltas and short-term temporal statistics)."),
+              p(f"On the 20 held-out simulated test sessions, the learned weights (Model C) reached a mean "
+                f"selected error of {TEST['dynamic_ml_weights_model_C']['mean_error_m']:.3f} m, improving to "
+                f"{TEST['dynamic_ml_with_hysteresis']['mean_error_m']:.3f} m with a 0.05 deadband and about 43 "
+                f"percent fewer source switches, compared with "
+                f"{TEST['original_fixed_weights_model_A']['mean_error_m']:.3f} m for the original fixed "
+                f"coefficients. These figures are results of the controlled simulation, not field or RTK accuracy "
+                f"claims."),
+              PageBreak()]
+
+    toc = TableOfContents(dotsMinLevel=0, formatter=doc.body_page_label)
+    toe = ParagraphStyle("TOCTitle", parent=S["front_head"], alignment=TA_CENTER)
+    story += [Paragraph("Table of Contents", toe), toc]
+    story += [PageBreak()]
+
+    loftoc = TableOfContents(dotsMinLevel=0, formatter=doc.body_page_label,
+                             notifyKind="FigEntry")
+    loftoc.levelStyles = [S["toc"]]
+    story += [h1("List of Figures"), loftoc, PageBreak()]
     return story
 
 
-def front_matter(kind):
-    story = [h1("Declaration")]
-    story += [p("This document records the design, implementation status and evaluation of the Multi GNSS Dynamic Receiver Selection System. It is prepared from the project repository, including the ESP32 firmware, Raspberry Pi service, offline model code and exported evaluation metrics. The evaluation reported in this document is a controlled simulation study and should be represented as such in a review or viva."),
-              Spacer(1, 13 * mm),
-              p("Student signature: ____________________", "body"),
-              p("Date: ____________________", "body"), PageBreak(),
-              h1("Acknowledgement"),
-              p("The author thanks the project guide, department and peers whose feedback helped define the engineering problem: selecting the more reliable output from two low-cost GNSS receivers. The work brought together embedded programming, serial communication, web visualization, data preparation and machine learning. The report also acknowledges the importance of careful experimental language: a model is useful only when its claims match the evidence used to evaluate it."),
-              PageBreak(),
-              h1("Abstract"),
-              p("Low-cost GNSS receivers can disagree because satellite visibility, geometry, signal quality, multipath and stale observations vary over time. Selecting one receiver with a fixed hand-designed score can hide these interactions and can make several important ranges indistinguishable. This project keeps the original reliability equation W = a*T + b*S + c*SNR + d*DOP unchanged and instead learns the coefficients context-dependently: a compact neural network maps current GNSS conditions to [a, b, c, d], so the same self-explanatory formula is used everywhere while its weights adapt."),
-              p("The hardware pipeline uses two GNSS data streams acquired by an ESP32 with a per-second C/N0 tracker, a Raspberry Pi decision engine that applies the learned weights with a switching deadband (hysteresis) and a fixed-weight fallback, and a Flask web view. The offline experiment conditions the weight network on 16 features derived from both receivers (raw reliability indicators, comparative deltas and short-term temporal statistics)."),
-              p(f"On the 20 held-out simulated test sessions with {TEST[MODEL_KEYS[0][2]]['available_epochs']:,} selectable epochs, the learned weights (Model C) reached a mean selected error of {TEST['dynamic_ml_weights_model_C']['mean_error_m']:.3f} m, improving to {TEST['dynamic_ml_with_hysteresis']['mean_error_m']:.3f} m with a 0.05 deadband and about 43 percent fewer source switches, compared with {TEST['original_fixed_weights_model_A']['mean_error_m']:.3f} m for the original fixed coefficients. The learned weights are interpretable: they shift toward DOP under open-sky conditions and toward timing and satellite-count terms in degraded scenarios. These figures are results of the controlled simulation, not field or RTK accuracy claims; the required next step is synchronized real receiver data with a trusted reference trajectory."),
-              PageBreak(),
-              h1("Table of Contents")]
-    toc = TableOfContents()
-    toc.levelStyles = [S["toc_h1"], S["toc"]]
-    story += [toc, PageBreak()]
-    return story
-
-
-def report_story():
+def report_story(doc):
     story = cover_page("Multi GNSS Dynamic Receiver Selection System", "Adaptive reliability weights, live integration and simulation based evaluation", "Project Report")
-    story += front_matter("Project Report")
+    story += certificate_page()
+    story += front_matter(doc)
 
     A = TEST["original_fixed_weights_model_A"]
     B = TEST["optimized_fixed_weights_model_B"]
     C = TEST["dynamic_ml_weights_model_C"]
     Cx = TEST["dynamic_ml_with_hysteresis"]
 
-    story += [h1("1 Introduction"),
+    story += [h1("1. Introduction"),
               p("Global Navigation Satellite Systems estimate a receiver position from radio signals transmitted by satellites. A low-cost GNSS module normally reports latitude, longitude, time, satellite count and quality indicators. In open sky, two receivers may appear similar. In partly blocked or reflective surroundings, their reported positions can differ even when both still have a valid fix. A selection system is useful when it continuously decides which receiver output is more likely to be accurate at the current instant."),
               p("The project keeps the original reliability equation as its decision rule: each receiver gets a score W = a*T + b*S + c*SNR + d*DOP built from timing accuracy, satellite count, signal-to-noise ratio and HDOP, and the receiver with the larger W is selected. The scientific question studied in this phase is where the coefficients [a, b, c, d] should come from. A fixed, hand-chosen set is not learned from measurements and cannot respond when the GNSS environment changes. The revised experiment learns a compact mapping f(X) from current conditions to the coefficients, so the same transparent formula is preserved while its weights adapt."),
               h2("1.1 Objectives"),
@@ -459,7 +642,7 @@ def report_story():
               h2("1.2 Scope"),
               p("The repository contains a hardware-oriented prototype whose live path is implemented and a separate offline model experiment that produced the exported weights. The ESP32 firmware, Raspberry Pi engine, web dashboard and the ML training/evaluation code are all in the repository. The evaluation reported here is a controlled simulation study; the model and engine are integrated together, but they have not yet been validated against synchronized real receiver logs and a trusted reference trajectory."), PageBreak(),
 
-              h1("2 GNSS Background"),
+              h1("2. GNSS Background"),
               h2("2.1 How a GNSS position is formed"),
               p("Each satellite broadcasts a time-stamped signal and orbital information. The receiver estimates the travel time of the signal and converts it to a pseudorange. With signals from at least four satellites, the receiver solves for three position coordinates and its clock bias. This is often called trilateration in introductory explanations, although the actual receiver solution uses pseudoranges, timing corrections and a least-squares or filter-based estimator."),
               h2("2.2 Why two receivers can disagree"),
@@ -481,10 +664,10 @@ def report_story():
               ], [2.4*cm, 4.0*cm, 3.4*cm, 5.1*cm]),
               caption("Table 1. GNSS indicators used in the reliability score and the adaptive weight network."), PageBreak(),
 
-              h1("3 System Architecture"),
+              h1("3. System Architecture"),
               p("The data path begins with two GNSS modules. The ESP32 reads each NMEA stream through a separate hardware UART, parses it with TinyGPSPlus, tracks the per-satellite C/N0 from GSV sentences and emits one combined line through USB serial at about 1 Hz. The Raspberry Pi decision engine parses the line, evaluates the reliability terms, obtains adaptive weights [a,b,c,d] from the exported model (with a fixed-weight fallback), applies a hysteresis deadband and logs every decision to a JSONL file. A Flask endpoint serves the selected location to the browser dashboard."),
               system_drawing(),
-              caption("Figure 1. The live-integrated pipeline: the exported model drives the Raspberry Pi decision engine."),
+              figcaption("Fig 3.1 The live-integrated pipeline: the exported model drives the Raspberry Pi decision engine."),
               h2("3.1 ESP32 message format"),
               p("The firmware emits a compact, comma-separated representation for each receiver; the two records are separated with a vertical bar. Each record is GPS,time,lat,lon,sat,hdop,snr or GNSS,time,lat,lon,sat,hdop,snr, where snr is the 1 s average C/N0. Latitude and longitude become the string NO_FIX when location data is invalid; satellite count defaults to zero; HDOP defaults to 99.99."),
               Preformatted("GPS,12:10:05,10.051602,76.331617,18,0.82,46|GNSS,12:10:05,10.051610,76.331601,15,1.24,44", S["code"]),
@@ -499,7 +682,7 @@ def report_story():
               ], [2.5*cm, 3.1*cm, 5.3*cm, 4.0*cm]),
               caption("Table 2. Components and evidence-based implementation status."), PageBreak(),
 
-              h1("4 The Weighted Reliability Score and Its Limitations"),
+              h1("4. The Weighted Reliability Score and Its Limitations"),
               p("The decision rule is the original weighted reliability equation. Each receiver is scored with four components normalized to 0 to 1:"),
 
               p("<font name='Courier'>T   = clip(1 - time_error / 5, 0, 1)\nS   = clip(satellites / 20, 0, 1)\nSNR = clip(cn0 / 50, 0, 1)\nDOP = clip(1 / HDOP, 0, 1)\nW = a*T + b*S + c*SNR + d*DOP\nbest_receiver = argmax(W)</font>", "body"),
@@ -518,10 +701,10 @@ def report_story():
               ], [3.2*cm, 6.0*cm, 5.8*cm]),
               caption("Table 3. Motivation for learning context-dependent weights instead of replacing the equation."), PageBreak(),
 
-              h1("5 Adaptive Weight Learning"),
+              h1("5. Adaptive Weight Learning"),
               p("Model C is an adaptive weight learner. It does not replace the selection rule with a black-box classifier; instead a compact MLP maps a conditioning feature vector X to softmax coefficients [a,b,c,d] = f(X), which are then inserted into the preserved reliability equation. Constraining the output with softmax keeps a,b,c,d non-negative and summing to one, so the weights stay interpretable as a normalized allocation of importance."),
               model_drawing(),
-              caption("Figure 2. Model C architecture: learned coefficients feed the unchanged W = a*T + b*S + c*SNR + d*DOP rule."),
+              figcaption("Fig 5.1 Model C architecture: learned coefficients feed the unchanged W = a*T + b*S + c*SNR + d*DOP rule."),
               h2("5.1 Conditioning features"),
               p("The network conditions on 16 features built from both receivers at each epoch: the eight raw reliability-relevant values (T-related timing error, satellites, C/N0 and HDOP for receiver 0 and receiver 1), four comparative deltas between the two receivers, and four temporal statistics (per-receiver satellite-count rate and a causal 5-sample C/N0 moving average). All features are observable at decision time. The model respects the original raw channel order: satellites, HDOP, C/N0, age, step, time error and receiver id."),
               h2("5.2 Network and parameter count"),
@@ -540,7 +723,7 @@ def report_story():
               h2("5.4 Deployment behaviour"),
               p("At inference the engine computes W for both receivers, restricts selection to receivers that pass the availability checks (valid fix, at least four satellites, HDOP inside range, data younger than 2 s), and applies a deadband: if the absolute difference |W0 - W1| is below the hysteresis threshold, the previously selected receiver is retained to avoid rapid oscillation. If the learned model fails to load or returns abnormal output, the engine falls back to the original fixed coefficients (0.25, 0.25, 0.30, 0.20)."), PageBreak(),
 
-              h1("6 Training and Evaluation Design"),
+              h1("6. Training and Evaluation Design"),
               h2("6.1 Training objective"),
               p("The network is trained with a soft, differentiable selection objective. Define the soft probability P1 = sigmoid(tau * (W1 - W2)); the loss is the expected positioning error E[P1*E1 + P2*E2] using the receivers' actual generated errors. As training proceeds the temperature tau anneals from 2.0 toward 0.5, making the soft selection progressively sharper toward the deterministic argmax used at deployment."),
               h2("6.2 Controlled scenario generation"),
@@ -564,10 +747,10 @@ def report_story():
                   "<b>Availability:</b> number of epochs with at least one eligible receiver.",
               ]), PageBreak(),
 
-              h1("7 Results"),
+              h1("7. Results"),
               p("The following results compare the fixed-weight baselines and the adaptive model on the 20 held-out test sessions. All selection decisions use the reliability equation; only the coefficients differ."),
               accuracy_chart(),
-              caption("Figure 3. Held-out comparison. Lower error is better."),
+              figcaption("Fig 7.1 Held-out comparison. Lower error is better."),
               data_table([
                   ["Selector", "Accuracy vs oracle", "Mean m", "Median m", "RMSE m", "95th m", "Switches"],
                   *[[name, f"{TEST[key]['selection_accuracy_vs_oracle']*100:.1f}%",
@@ -576,19 +759,45 @@ def report_story():
                      f"{TEST[key]['switches']:,}"] for name, _, key in MODEL_KEYS],
               ], [4.2*cm, 2.5*cm, 2.0*cm, 2.2*cm, 2.0*cm, 2.0*cm, 2.2*cm]),
               caption("Table 6. Held-out results (5,986 available epochs). The oracle lower bound is not a deployable selector."),
+              p(f"The row 'Accuracy vs oracle' counts, at each available epoch, whether the selector picked the "
+                f"receiver that actually had the lower error ({Cx['selection_accuracy_vs_oracle']*100:.1f} percent "
+                f"for the deployed selector). The confusion matrix below breaks those decisions into full counts, "
+                f"with the lower-error receiver as the reference:"),
+              confusion_matrix_drawing("dynamic_ml_with_hysteresis"),
+              figcaption("Fig 7.2 Confusion matrix of the deployed selector (Model C + hysteresis 0.05) against the "
+                         "oracle on the 5,986 available test epochs."),
+              data_table([
+                  ["Selector", "Oracle R0, sel R0", "Oracle R0, sel R1", "Oracle R1, sel R0", "Oracle R1, sel R1", "Oracle agreement"],
+                  *[[name,
+                     f"{EVAL['confusion'][key]['matrix'][0][0]:,}",
+                     f"{EVAL['confusion'][key]['matrix'][0][1]:,}",
+                     f"{EVAL['confusion'][key]['matrix'][1][0]:,}",
+                     f"{EVAL['confusion'][key]['matrix'][1][1]:,}",
+                     f"{EVAL['confusion'][key]['accuracy_vs_oracle']*100:.1f}%"]
+                    for name, _, key in MODEL_KEYS],
+              ], [3.4*cm, 2.1*cm, 2.1*cm, 2.1*cm, 2.1*cm, 2.2*cm]),
+              caption("Table 7. Selector-vs-oracle confusion counts over the held-out test split. 'Oracle R0' means "
+                      "receiver 0 had the lower actual error at that epoch; 'sel R1' means the rule picked receiver 1. "
+                      "Diagonal columns are agreement with the oracle."),
+              p(f"In absolute terms the deployed selector agrees with the oracle at "
+                f"{EVAL['confusion']['dynamic_ml_with_hysteresis']['accuracy_vs_oracle']*100:.1f} percent of epochs. "
+                f"It is conservative in a specific way: it agrees on more than half of the epochs where the oracle "
+                f"prefers receiver 1, while a fixed baseline struggles with the same set. The off-diagonal imbalance "
+                f"also shows why the reliability equation needs a hysteresis deadband: many of the residual disagreements "
+                f"occur when the two scores are close, which is exactly the regime hysteresis suppresses."),
               p(f"Model C reduced mean selected error by {(1 - C['mean_error_m'] / A['mean_error_m'])*100:.1f} percent relative to the original Model A and by {(1 - C['mean_error_m'] / B['mean_error_m'])*100:.1f} percent relative to the optimized fixed Model B. With the 0.05 hysteresis deadband, mean error fell to {Cx['mean_error_m']:.3f} m, 95th-percentile error to {Cx['p95_error_m']:.3f} m, flip accuracy rose from {A['selection_accuracy_vs_oracle']*100:.1f} percent (A) to {Cx['selection_accuracy_vs_oracle']*100:.1f} percent, and source switches dropped by {(1 - Cx['switches']/A['switches'])*100:.1f} percent compared with Model A."),
               p("The honest reading is that the accuracy gain of dynamic weighting over even the optimized fixed set is small. Most of the practical improvement comes from the hysteresis deadband, which stabilizes the output track rather than dramatically changing accuracy. These figures only support the claim that the adaptive weights learned the patterns built into this controlled study."), PageBreak(),
 
-              h1("8 Results by Scenario and Learned-Weight Analysis"),
+              h1("8. Results by Scenario and Learned-Weight Analysis"),
               scenario_chart(),
-              caption("Figure 4. Mean selected error by generated condition. Lower error is better."),
+              figcaption("Fig 8.1 Mean selected error by generated condition. Lower error is better."),
               data_table([
                   ["Scenario", "Model A mean m", "Model B mean m", "Model C mean m"],
                   *[[label, f"{SCEN[n]['model_A']['mean_error_m']:.3f}",
                      f"{SCEN[n]['model_B']['mean_error_m']:.3f}",
                      f"{SCEN[n]['model_C']['mean_error_m']:.3f}"] for label, n in zip(SCENARIO_LABELS, SCENARIO_NAMES)],
               ], [4.6*cm, 3.5*cm, 3.5*cm, 3.5*cm]),
-              caption("Table 7. Scenario comparison on the held-out test split."),
+              caption("Table 8. Scenario comparison on the held-out test split."),
               p("The largest margin occurs in the urban-multipath condition, where Model C can combine several degraded indicators. The adaptive weights are also interpretable, which is a core claim of the project:"),
               data_table([
                   ["Condition (test, both receivers available)", "alpha (timing)", "beta (sats)", "gamma (SNR)", "delta (DOP)"],
@@ -600,7 +809,7 @@ def report_story():
                     for label, name in [("Open sky", "high_satellite_count"), ("Urban multipath", "low_satellite_count"),
                                         ("Good geometry", "good_geometry"), ("Poor geometry", "poor_geometry")]],
               ], [4.3*cm, 2.7*cm, 2.4*cm, 2.2*cm, 2.4*cm]),
-              caption("Table 8. Learned weights by proxy condition, aggregated over test epochs (see metrics.json learned_weights for the full set)."),
+              caption("Table 9. Learned weights by proxy condition, aggregated over test epochs (see metrics.json learned_weights for the full set)."),
               p(f"Overall, the model allocates about {LW['overall']['weights']['delta']*100:.0f} percent of its weight to DOP and {LW['overall']['weights']['alpha']*100:.0f} percent to timing, but in open-sky epochs the DOP weight approaches {LW['by_scenario']['open_sky']['weights']['delta']:.2f} while in urban multipath the timing and satellite weights dominate (alpha + beta ~0.96). The gamma (SNR) term carries little extra discriminative power in this synthetic data. These weight shifts are correlational observations about the generated study, not causal claims."),
               h2("8.1 Feature ablation"),
               data_table([
@@ -608,7 +817,7 @@ def report_story():
                   *[[name, f"{ab['mean_error_m']:.3f}", f"{ab['selection_accuracy']*100:.1f}%",
                      f"{ab['switches']:,}"] for name, ab in EVAL["ablation"].items()],
               ], [4.6*cm, 2.5*cm, 2.7*cm, 2.5*cm]),
-              caption("Table 9. Ablation of conditioning feature groups (30-epoch budget, test split). Adding comparative and temporal features progressively improves selection."),
+              caption("Table 10. Ablation of conditioning feature groups (30-epoch budget, test split). Adding comparative and temporal features progressively improves selection."),
               h2("8.2 Hysteresis sweep"),
               data_table([
                   ["Threshold", "Accuracy vs oracle", "Mean m", "Switches", "Mean run s"],
@@ -616,9 +825,9 @@ def report_story():
                      f"{s['mean_error_m']:.3f}", f"{s['switches']:,}", f"{s['mean_duration_s']:.2f}"]
                     for t, s in EVAL["hysteresis_sweep"].items()],
               ], [2.7*cm, 3.5*cm, 2.4*cm, 2.4*cm, 2.6*cm]),
-              caption("Table 10. Hysteresis sweep for Model C. Threshold 0.05 was chosen for balance: better accuracy and error with about 42 percent fewer switches than no deadband."), PageBreak(),
+              caption("Table 11. Hysteresis sweep for Model C. Threshold 0.05 was chosen for balance: better accuracy and error with about 42 percent fewer switches than no deadband."), PageBreak(),
 
-              h1("9 Implementation Status and Remaining Gaps"),
+              h1("9. Implementation Status and Remaining Gaps"),
               p("A defensible project report states both what is implemented and what remains before a field-ready system. The live path is now implemented end to end: firmware with C/N0, a unit-tested decision engine with adaptive weights, hysteresis and logging, and a simulated frame source for hardware-free verification. The offline experiment is complete and deterministic. The remaining work is empirical validation."),
               data_table([
                   ["Area", "Status in current source", "Remaining work"],
@@ -628,7 +837,7 @@ def report_story():
                   ["ML experiment", "Deterministic NumPy training (Model A/B/C), grid search, ablation, hysteresis sweep; 9 tests pass.", "Retrain on synchronized real sessions separated by route or time."],
                   ["Validation", "Simulated reference trajectories and generated errors only.", "Collect real reference positions (RTK or surveyed), remove faulty reference intervals, account for antenna offsets."],
               ], [3.0*cm, 6.7*cm, 5.3*cm]),
-              caption("Table 11. Implementation status and evidence boundaries.")
+              caption("Table 12. Implementation status and evidence boundaries.")
               ,
               h2("9.1 Recommended sequence to a field claim"),
               numbered([
@@ -639,7 +848,7 @@ def report_story():
                   "Report mean, median, tail error, availability and switching by environment, not only overall numbers.",
               ]), PageBreak(),
 
-              h1("10 Conclusion"),
+              h1("10. Conclusion"),
               p("This project keeps the decision rule simple and inspectable - W = a*T + b*S + c*SNR + d*DOP with argmax selection - and makes the weights adaptive. The offline experiment shows that a compact network can learn interpretable, context-dependent weights: DOP dominates under good conditions, while timing and satellite terms take over under degraded ones. The gains over even an optimized fixed set are modest, and most of the practical stability comes from the hysteresis deadband."),
               p("The live pipeline integrates all pieces: the ESP32 emits C/N0, the Raspberry Pi engine applies learned weights with fallback and hysteresis and logs every decision, and the dashboard visualizes results. The next milestone is not more modelling: it is collecting synchronized real receiver and reference data so that the same pipeline can be retrained and honestly evaluated outside the controlled simulation."),
               h1("References"),
@@ -677,7 +886,7 @@ def qa(title, answer):
     return [h3(title), p(answer, "body_small")]
 
 
-def viva_story():
+def viva_story(doc):
     test = TEST
     story = cover_page("Multi GNSS Dynamic Receiver Selection System", "Technical viva preparation guide from fundamentals to implementation", "Viva Guide")
     story += [h1("How to Use This Guide"),
@@ -688,7 +897,7 @@ def viva_story():
               p("We kept the original reliability equation unchanged and made its coefficients context-dependent through a small learned network, then integrated the adaptive weights into the live receiver-selection engine with hysteresis and a safe fallback."),
               PageBreak(),
 
-              h1("1 GNSS From First Principles"),
+              h1("1. GNSS From First Principles"),
               h2("1.1 What does GNSS mean"),
               p("GNSS means Global Navigation Satellite System. It is the broad name for satellite navigation constellations such as GPS, Galileo, GLONASS and BeiDou. GPS is one constellation; a GNSS receiver may use more than one constellation."),
               h2("1.2 What is a GNSS receiver actually measuring"),
@@ -707,7 +916,7 @@ def viva_story():
               ], [3.0*cm, 7.0*cm, 5.0*cm]),
               caption("Table 1. Sources of GNSS position error."), PageBreak(),
 
-              h1("2 Quality Indicators You Must Understand"),
+              h1("2. Quality Indicators You Must Understand"),
               h2("2.1 Satellite count"),
               p("Satellite count is a useful clue because more tracked satellites can provide redundancy. It is not a guarantee: ten strong, well spread satellites can be better than twenty weak or clustered ones. The normalized term uses satellites / 20 capped at 1, and the raw count also feeds the conditioning vector."),
               h2("2.2 HDOP"),
@@ -719,7 +928,7 @@ def viva_story():
               h2("2.5 HDOP and satellite count are related but not identical"),
               p("They often move together because fewer visible satellites can worsen geometry. They are still different: two groups of satellites can have the same count but very different sky distribution and HDOP. A model can receive both, but it needs properly separated data and careful validation so it does not learn a fragile accidental correlation."), PageBreak(),
 
-              h1("3 The Original Weighted Score and Its Limitations"),
+              h1("3. The Original Weighted Score and Its Limitations"),
               Preformatted("T   = clip(1 - time_error/5, 0, 1)\nS   = clip(satellites/20,    0, 1)\nSNR = clip(cn0/50,           0, 1)\nDOP = clip(1/HDOP,           0, 1)\n\nW = 0.25*T + 0.25*S + 0.30*SNR + 0.20*DOP\nselect the receiver with the larger W", S["code"]),
               h2("3.1 Why it looks reasonable"),
               p("The formula uses understandable signals and produces one number per receiver. It is cheap to calculate and easy to explain. For a first prototype it establishes a baseline that can be compared with a learned decision method."),
@@ -741,9 +950,9 @@ def viva_story():
                   ["What can go wrong", "Bad formula or thresholds.", "Bad or unrepresentative data, leakage, overfitting, or unsafe outputs without a fallback."],
               ], [4.0*cm, 5.6*cm, 5.4*cm]), PageBreak(),
 
-              h1("4 The Adaptive Weight Model"),
+              h1("4. The Adaptive Weight Model"),
               model_drawing(),
-              caption("Figure 1. Model C: conditioning features produce softmax coefficients for the preserved reliability equation."),
+              figcaption("Fig 4.1 Model C: conditioning features produce softmax coefficients for the preserved reliability equation."),
               h2("4.1 Exact architecture and parameter count"),
               Preformatted("Input X: 16 conditioning features\nNormalize: z = (x - training_mean) / training_std\nHidden 1: ReLU(z @ W1 + b1)      16 -> 24\nHidden 2: ReLU(h1 @ W2 + b2)     24 -> 24\nOutput:   softmax(h2 @ W3 + b3)  24 -> 4  [a, b, c, d]\n\nW1: 16 x 24 = 384      b1: 24\nW2: 24 x 24 = 576      b2: 24\nW3: 24 x 4 = 96        b3: 4\nTotal trainable parameters = 1,108", S["code"]),
               h2("4.2 What does ReLU do"),
@@ -761,7 +970,7 @@ def viva_story():
                   "It never replaces the decision rule; it only provides the coefficients.",
               ]), PageBreak(),
 
-              h1("5 Data, Labels and Training"),
+              h1("5. Data, Labels and Training"),
               h2("5.1 What is one training example"),
               p("One training example is one epoch (one time step) where both receivers are available. Its input is the 16-dimension conditioning vector assembled from both receivers. Its targets for the loss are the two horizontal errors, in metres, between each receiver's reported position and the reference trajectory."),
               h2("5.2 Why the reference position is not an input"),
@@ -781,7 +990,7 @@ def viva_story():
                   ["Best checkpoint", f"Epoch {METRICS['best_epoch']} based on lowest validation expected error."],
               ], [4.0*cm, 11.0*cm]), PageBreak(),
 
-              h1("6 How Inference Chooses a Receiver"),
+              h1("6. How Inference Chooses a Receiver"),
               Preformatted("for each receiver: check eligibility, compute T, S, SNR, DOP\n[a, b, c, d] = f(X)             # learned or fixed fallback\nW_i = a*T_i + b*S_i + c*SNR_i + d*DOP_i\n\nif |W0 - W1| < hysteresis threshold:\n    keep the previously selected receiver\nelse:\n    select argmax(W) among available receivers (else none)", S["code"]),
               h2("6.1 Eligibility rules"),
               data_table([
@@ -797,9 +1006,9 @@ def viva_story():
               h2("6.3 Fallback behaviour"),
               p("If the model fails to load or returns abnormal weights, the engine falls back to the original fixed coefficients 0.25, 0.25, 0.30, 0.20 (Model A). The fallback keeps the live service functional and is also used for the 7-field frames that lack a C/N0 value."), PageBreak(),
 
-              h1("7 Results You Can Explain Precisely"),
+              h1("7. Results You Can Explain Precisely"),
               accuracy_chart(),
-              caption("Figure 2. Overall held-out result from the controlled experiment."),
+              figcaption("Fig 7.1 Overall held-out result from the controlled experiment."),
               data_table([
                   ["Selector", "Accuracy vs oracle", "Mean m", "Median m", "95th m", "Switches"],
                   *[[name, f"{test[key]['selection_accuracy_vs_oracle']*100:.1f}%",
@@ -814,7 +1023,7 @@ def viva_story():
               h2("7.3 The flip-oracle is not a competitor"),
               p("The oracle compares the actual reference errors after the fact and represents the maximum agreement any selector could achieve. It is shown only to calibrate how much room for improvement remains in choosing between these two outputs. It must never be described as an implementable method."), PageBreak(),
 
-              h1("8 Exact Code Flow and Current Limits"),
+              h1("8. Exact Code Flow and Current Limits"),
               h2("8.1 ESP32 firmware"),
               p("The sketch creates two TinyGPSPlus parsers and two ESP32 hardware serial ports (UART1 RX1 18 / TX1 5, UART2 RX2 26 / TX2 25). Each loop feeds bytes into the parsers and a small C/N0 tracker that consumes GSV sentences. When a location updates, it emits GPS or GNSS records with time, latitude, longitude, satellite count, HDOP and the 1 s average C/N0."),
               h2("8.2 Raspberry Pi decision engine and server"),
@@ -837,7 +1046,7 @@ def viva_story():
               h2("8.4 Hard question: is this live machine learning on the Raspberry Pi"),
               p("Yes, in prototype form. The exported model.npz is loaded at runtime by gnss_engine.py and the engine is unit-tested. The remaining honesty point is that 'live' here means the software pipeline is connected end to end; it has not been validated against real receiver logs with a trusted reference. Real-field validation and retraining are the next step."), PageBreak(),
 
-              h1("9 Practical Defence Checklist"),
+              h1("9. Practical Defence Checklist"),
               h2("9.1 Statements you can safely make"),
               bullets([
                   "The architecture supports two receiver inputs, embedded acquisition with C/N0, and a live decision engine.",
@@ -872,7 +1081,7 @@ def viva_story():
                   "End with the field-validation plan and the evidence boundary.",
               ]), PageBreak(),
 
-              h1("10 Possible Viva Questions and Answers"),
+              h1("10. Possible Viva Questions and Answers"),
     ]
 
     qas = [
@@ -965,18 +1174,18 @@ def viva_story():
     return story
 
 
-def build(filename: Path, label: str, story):
+def build(filename: Path, label: str, story_fn):
     doc = AcademicDoc(str(filename), label=label, pagesize=A4,
                       title=label, author="Sanal Sivakumar")
-    doc.multiBuild(story)
+    doc.multiBuild(story_fn(doc))
 
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     build(OUT / "GNSS_Dynamic_Receiver_Selection_Project_Report.pdf",
-          "Multi GNSS Dynamic Receiver Selection System Project Report", report_story())
+          "Multi GNSS Dynamic Receiver Selection System Project Report", report_story)
     build(OUT / "GNSS_Dynamic_Receiver_Selection_Viva_Guide.pdf",
-          "Multi GNSS Dynamic Receiver Selection System Viva Guide", viva_story())
+          "Multi GNSS Dynamic Receiver Selection System Viva Guide", viva_story)
     print("Created", OUT / "GNSS_Dynamic_Receiver_Selection_Project_Report.pdf")
     print("Created", OUT / "GNSS_Dynamic_Receiver_Selection_Viva_Guide.pdf")
 

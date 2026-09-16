@@ -84,6 +84,32 @@ def switching_stats(decisions, session, errors):
                 mean_duration_s=float(run_len_sum / runs) if runs else 0.0)
 
 
+def selection_confusion(decisions, errors, available):
+    """2x2 selection-vs-oracle confusion counts over available epochs.
+
+    Rows = the receiver the oracle would have chosen (lower actual error);
+    columns = the receiver the selector actually picked. Cells therefore count
+    agreement (diagonal) and mistaken picks (off diagonal). Returns n, accuracy
+    vs the oracle and the raw [[R0,R0],[R1,R1]] count matrix.
+    """
+    decisions = np.asarray(decisions)
+    errors = np.asarray(errors, dtype=float)
+    available = np.asarray(available, dtype=bool)
+    oracle = oracle_decisions(errors, available)
+    ok = available.any(axis=-1)
+    sel, orc = decisions[ok], oracle[ok]
+    keep = (sel >= 0) & (orc >= 0)
+    cm = np.zeros((2, 2), dtype=int)
+    for s, o in zip(sel[keep], orc[keep]):
+        cm[o, s] += 1
+    total = int(keep.sum())
+    return {
+        'n': total,
+        'accuracy_vs_oracle': float((cm[0, 0] + cm[1, 1]) / total) if total else None,
+        'matrix': cm.tolist(),
+    }
+
+
 def evaluate_selection(decisions, errors, available, session):
     """Full receiver-selection metric block for one selector."""
     decisions = np.asarray(decisions)
